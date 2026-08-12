@@ -6,158 +6,96 @@
   <title>MY Eyes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="water-bg" aria-hidden="true">
+    <div class="ripple ripple-1"></div>
+    <div class="ripple ripple-2"></div>
+    <div class="ripple ripple-3"></div>
+    <div class="caustics"></div>
+  </div>
+
   <header class="header">
     <nav class="nav">
-      <a href="#" class="logo">MY Eyes</a>
-      <ul class="nav-links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#products">Products</a></li>
-        <li><a href="#care">Eye Care</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-      <button class="nav-toggle" aria-label="Toggle menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <a href="index.html" class="logo">MY Eyes</a>
+      <a href="cart.html" class="cart-btn" aria-label="View cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M6 6h15l-1.5 9h-12z"/>
+          <path d="M6 6L5 3H2"/>
+          <circle cx="9" cy="20" r="1"/>
+          <circle cx="18" cy="20" r="1"/>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
     </nav>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-bg"></div>
-      <div class="hero-content">
-        <p class="hero-tag">See the world clearly</p>
-        <h1>MY Eyes</h1>
-        <p class="hero-desc">Premium contact lenses designed for comfort, clarity, and confidence — every single day.</p>
-        <div class="hero-actions">
-          <a href="#products" class="btn btn-primary">Explore Lenses</a>
-          <a href="#about" class="btn btn-secondary">Learn More</a>
-        </div>
-      </div>
-      <div class="hero-visual">
-        <div class="eye-ring eye-ring-1"></div>
-        <div class="eye-ring eye-ring-2"></div>
-        <div class="eye-ring eye-ring-3"></div>
-        <div class="eye-center">
-          <div class="iris"></div>
+    <section class="welcome">
+      <div class="container">
+        <p class="welcome-tag">Serenity</p>
+        <h1>Welcome to MY Eyes</h1>
+        <p class="welcome-desc">
+          Discover our curated collection of daily contact lenses.
+          Currently available in <strong>1-day wear</strong> with a
+          <strong>0.00 prescription</strong> only.
+        </p>
+        <div class="welcome-badges">
+          <span class="badge">1-Day Wear</span>
+          <span class="badge">0.00 Prescription</span>
         </div>
       </div>
     </section>
 
-    <section id="about" class="section about">
+    <section class="shop">
       <div class="container">
-        <div class="about-grid">
-          <div class="about-text">
-            <span class="section-label">About Us</span>
-            <h2>Your vision, our passion</h2>
-            <p>At MY Eyes, we believe everyone deserves to see the world with clarity and comfort. Our contact lenses are crafted with advanced materials that keep your eyes hydrated and healthy throughout the day.</p>
-            <p>Whether you're new to contact lenses or a long-time wearer, we're here to help you find the perfect fit.</p>
-          </div>
-          <div class="about-stats">
-            <div class="stat">
-              <span class="stat-number">50K+</span>
-              <span class="stat-label">Happy Customers</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">15+</span>
-              <span class="stat-label">Lens Types</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">98%</span>
-              <span class="stat-label">Comfort Rating</span>
+        <aside class="filters">
+          <h2>Filter</h2>
+
+          <div class="filter-group">
+            <h3>Brand</h3>
+            <div class="filter-options" id="brandFilters">
+              <button class="filter-btn active" data-filter="brand" data-value="all">All</button>
+              <button class="filter-btn" data-filter="brand" data-value="A">A</button>
+              <button class="filter-btn" data-filter="brand" data-value="B">B</button>
+              <button class="filter-btn" data-filter="brand" data-value="C">C</button>
+              <button class="filter-btn" data-filter="brand" data-value="D">D</button>
+              <button class="filter-btn" data-filter="brand" data-value="E">E</button>
+              <button class="filter-btn" data-filter="brand" data-value="F">F</button>
+              <button class="filter-btn" data-filter="brand" data-value="G">G</button>
+              <button class="filter-btn" data-filter="brand" data-value="H">H</button>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <section id="products" class="section products">
-      <div class="container">
-        <span class="section-label">Our Products</span>
-        <h2>Find your perfect lens</h2>
-        <div class="product-grid">
-          <article class="product-card">
-            <div class="product-icon daily"></div>
-            <h3>Daily Lenses</h3>
-            <p>Fresh comfort every morning. Simply wear and dispose — no cleaning required.</p>
-          </article>
-          <article class="product-card">
-            <div class="product-icon monthly"></div>
-            <h3>Monthly Lenses</h3>
-            <p>Cost-effective and reliable. Designed for 30 days of consistent clarity.</p>
-          </article>
-          <article class="product-card">
-            <div class="product-icon colored"></div>
-            <h3>Colored Lenses</h3>
-            <p>Express yourself with natural-looking color enhancements for any occasion.</p>
-          </article>
-          <article class="product-card">
-            <div class="product-icon toric"></div>
-            <h3>Toric Lenses</h3>
-            <p>Specialized lenses for astigmatism, offering stable vision all day long.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="care" class="section care">
-      <div class="container">
-        <div class="care-content">
-          <span class="section-label">Eye Care Tips</span>
-          <h2>Keep your eyes healthy</h2>
-          <ul class="care-list">
-            <li>
-              <span class="care-num">01</span>
-              <div>
-                <strong>Never sleep in your lenses</strong>
-                <p>Give your eyes time to breathe overnight.</p>
-              </div>
-            </li>
-            <li>
-              <span class="care-num">02</span>
-              <div>
-                <strong>Replace on schedule</strong>
-                <p>Follow the recommended replacement timeline for your lens type.</p>
-              </div>
-            </li>
-            <li>
-              <span class="care-num">03</span>
-              <div>
-                <strong>Keep them clean</strong>
-                <p>Use only approved solution and never use water or saliva.</p>
-              </div>
-            </li>
-            <li>
-              <span class="care-num">04</span>
-              <div>
-                <strong>Visit your optometrist</strong>
-                <p>Annual eye exams ensure your prescription stays accurate.</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="section contact">
-      <div class="container">
-        <div class="contact-card">
-          <div class="contact-text">
-            <span class="section-label">Get in Touch</span>
-            <h2>Ready to see better?</h2>
-            <p>Reach out and our team will help you find the right lenses for your lifestyle.</p>
+          <div class="filter-group">
+            <h3>DIA</h3>
+            <div class="filter-options" id="diaFilters">
+              <button class="filter-btn active" data-filter="dia" data-value="all">All</button>
+              <button class="filter-btn" data-filter="dia" data-value="14">14</button>
+              <button class="filter-btn" data-filter="dia" data-value="14.2">14.2</button>
+              <button class="filter-btn" data-filter="dia" data-value="14.5">14.5</button>
+            </div>
           </div>
-          <form class="contact-form" onsubmit="handleSubmit(event)">
-            <input type="text" placeholder="Your name" required>
-            <input type="email" placeholder="Email address" required>
-            <textarea placeholder="How can we help?" rows="3" required></textarea>
-            <button type="submit" class="btn btn-primary">Send Message</button>
-          </form>
+
+          <div class="filter-group">
+            <h3>Color</h3>
+            <div class="filter-options" id="colorFilters">
+              <button class="filter-btn active" data-filter="color" data-value="all">All</button>
+              <button class="filter-btn" data-filter="color" data-value="gray">Gray</button>
+              <button class="filter-btn" data-filter="color" data-value="hazel">Hazel</button>
+              <button class="filter-btn" data-filter="color" data-value="brown">Brown</button>
+              <button class="filter-btn" data-filter="color" data-value="blue">Blue</button>
+              <button class="filter-btn" data-filter="color" data-value="pink">Pink</button>
+            </div>
+          </div>
+        </aside>
+
+        <div class="products-area">
+          <p class="results-count" id="resultsCount"></p>
+          <div class="product-grid" id="productGrid"></div>
+          <p class="no-results hidden" id="noResults">No products match your filters.</p>
         </div>
       </div>
     </section>
@@ -170,6 +108,24 @@
     </div>
   </footer>
 
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div class="modal-lens" id="modalLens"></div>
+      <div class="modal-content">
+        <p class="modal-brand" id="modalBrand"></p>
+        <h2 id="modalTitle"></h2>
+        <ul class="modal-specs" id="modalSpecs"></ul>
+        <p class="modal-desc" id="modalDesc"></p>
+        <p class="modal-price" id="modalPrice"></p>
+        <button class="btn btn-primary" id="modalAddToCart">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script>
+    initShopPage();
+  </script>
 </body>
 </html>
