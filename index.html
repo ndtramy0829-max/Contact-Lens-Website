@@ -3,23 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY Eyes</title>
+  <title>MYE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="water-bg" aria-hidden="true">
-    <div class="ripple ripple-1"></div>
-    <div class="ripple ripple-2"></div>
-    <div class="ripple ripple-3"></div>
-    <div class="caustics"></div>
-  </div>
-
   <header class="header">
     <nav class="nav">
-      <a href="index.html" class="logo">MY Eyes</a>
+      <a href="index.html" class="logo">MYE</a>
       <a href="cart.html" class="cart-btn" aria-label="View cart">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
           <path d="M6 6h15l-1.5 9h-12z"/>
@@ -35,69 +28,23 @@
   <main>
     <section class="welcome">
       <div class="container">
-        <p class="welcome-tag">Serenity</p>
-        <h1>Welcome to MY Eyes</h1>
+        <p class="welcome-eyebrow">Curated contact lenses</p>
+        <h1>MYE</h1>
         <p class="welcome-desc">
-          Discover our curated collection of daily contact lenses.
-          Currently available in <strong>1-day wear</strong> with a
-          <strong>0.00 prescription</strong> only.
+          Discover natural tones and colors from brands we love—soft, breathable lenses for everyday wear.
         </p>
-        <div class="welcome-badges">
-          <span class="badge">1-Day Wear</span>
-          <span class="badge">0.00 Prescription</span>
-        </div>
+        <p class="welcome-note">Available in <span class="welcome-highlight">1-day wear</span> with a <span class="welcome-highlight">0.00 prescription</span> only.</p>
       </div>
     </section>
 
     <section class="shop">
       <div class="container">
         <aside class="filters">
-          <h2>Filter</h2>
-
-          <div class="filter-group">
-            <h3>Brand</h3>
-            <div class="filter-options" id="brandFilters">
-              <button class="filter-btn active" data-filter="brand" data-value="all">All</button>
-              <button class="filter-btn" data-filter="brand" data-value="A">A</button>
-              <button class="filter-btn" data-filter="brand" data-value="B">B</button>
-              <button class="filter-btn" data-filter="brand" data-value="C">C</button>
-              <button class="filter-btn" data-filter="brand" data-value="D">D</button>
-              <button class="filter-btn" data-filter="brand" data-value="E">E</button>
-              <button class="filter-btn" data-filter="brand" data-value="F">F</button>
-              <button class="filter-btn" data-filter="brand" data-value="G">G</button>
-              <button class="filter-btn" data-filter="brand" data-value="H">H</button>
-            </div>
+          <div class="filters-header">
+            <h2>Filter</h2>
+            <button type="button" class="filter-reset-btn" id="resetFilters">Reset filters</button>
           </div>
-
-          <div class="filter-group">
-            <h3>DIA</h3>
-            <div class="filter-options" id="diaFilters">
-              <button class="filter-btn active" data-filter="dia" data-value="all">All</button>
-              <button class="filter-btn" data-filter="dia" data-value="14">14</button>
-              <button class="filter-btn" data-filter="dia" data-value="14.2">14.2</button>
-              <button class="filter-btn" data-filter="dia" data-value="14.5">14.5</button>
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <h3>Color</h3>
-            <div class="filter-options" id="colorFilters">
-              <button class="filter-btn active" data-filter="color" data-value="all">All</button>
-              <button class="filter-btn" data-filter="color" data-value="gray">Gray</button>
-              <button class="filter-btn" data-filter="color" data-value="hazel">Hazel</button>
-              <button class="filter-btn" data-filter="color" data-value="brown">Brown</button>
-              <button class="filter-btn" data-filter="color" data-value="blue">Blue</button>
-              <button class="filter-btn" data-filter="color" data-value="pink">Pink</button>
-            </div>
-          </div>
-
-          <div class="filter-group filter-group-special">
-            <h3>Special</h3>
-            <div class="filter-options" id="specialFilters">
-              <button class="filter-btn active" data-filter="special" data-value="all">All</button>
-              <button class="filter-btn" data-filter="special" data-value="axis-lock">Axis-Lock</button>
-            </div>
-          </div>
+          <div id="filterGroups"></div>
         </aside>
 
         <div class="products-area">
@@ -111,8 +58,8 @@
 
   <footer class="footer">
     <div class="container footer-inner">
-      <span class="logo">MY Eyes</span>
-      <p>&copy; 2026 MY Eyes. All rights reserved.</p>
+      <span class="logo">MYE</span>
+      <p>&copy; 2026 MYE. All rights reserved.</p>
     </div>
   </footer>
 
@@ -131,6 +78,7 @@
     </div>
   </div>
 
+  <script src="products-data.js"></script>
   <script src="script.js"></script>
   <script>
     initShopPage();

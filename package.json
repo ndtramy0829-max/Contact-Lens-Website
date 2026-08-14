@@ -2,7 +2,7 @@
   "name": "contact-lens-web",
   "version": "1.0.0",
   "private": true,
-  "description": "MY Eyes contact lens website",
+  "description": "MYE contact lens website",
   "engines": {
     "node": ">=20"
   }
