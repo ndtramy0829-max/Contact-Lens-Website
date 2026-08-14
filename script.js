@@ -21,14 +21,18 @@ function generateProducts() {
   BRANDS.forEach((brand) => {
     COLORS.forEach((color, colorIndex) => {
       const dia = DIAS[colorIndex % DIAS.length];
+      const axisLock = colorIndex % 2 === 1;
       products.push({
         id: id++,
         brand,
         name: `Brand ${brand} ${capitalize(color)}`,
         dia,
         color,
+        axisLock,
         price: 19.99 + colorIndex * 2,
-        description: `1-day wear contact lenses with a 0.00 prescription. Soft, breathable design in a natural ${color} tone.`,
+        description: axisLock
+          ? `1-day wear contact lenses with a 0.00 prescription. Axis-Lock technology keeps lenses stable and comfortable all day in a natural ${color} tone.`
+          : `1-day wear contact lenses with a 0.00 prescription. Soft, breathable design in a natural ${color} tone.`,
       });
     });
   });
@@ -94,7 +98,7 @@ function lensStyle(color) {
 function initShopPage() {
   updateCartCount();
 
-  const filters = { brand: 'all', dia: 'all', color: 'all' };
+  const filters = { brand: 'all', dia: 'all', color: 'all', special: 'all' };
   const grid = document.getElementById('productGrid');
   const resultsCount = document.getElementById('resultsCount');
   const noResults = document.getElementById('noResults');
@@ -121,6 +125,7 @@ function initShopPage() {
       if (filters.brand !== 'all' && p.brand !== filters.brand) return false;
       if (filters.dia !== 'all' && p.dia !== parseFloat(filters.dia)) return false;
       if (filters.color !== 'all' && p.color !== filters.color) return false;
+      if (filters.special === 'axis-lock' && !p.axisLock) return false;
       return true;
     });
   }
@@ -134,7 +139,7 @@ function initShopPage() {
       <article class="product-card" data-id="${p.id}">
         <div class="product-lens" style="background: ${lensStyle(p.color)}"></div>
         <h3>${p.name}</h3>
-        <p class="product-meta">DIA ${p.dia} · ${capitalize(p.color)}</p>
+        <p class="product-meta">DIA ${p.dia} · ${capitalize(p.color)}${p.axisLock ? ' · Axis-Lock' : ''}</p>
         <p class="product-price">${formatPrice(p.price)}</p>
       </article>
     `).join('');
@@ -157,6 +162,7 @@ function initShopPage() {
       <li>0.00 Rx</li>
       <li>DIA ${product.dia}</li>
       <li>${capitalize(product.color)}</li>
+      ${product.axisLock ? '<li>Axis-Lock</li>' : ''}
     `;
     document.getElementById('modalDesc').textContent = product.description;
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
@@ -224,7 +230,7 @@ function initCartPage() {
           <div class="cart-item-lens" style="background: ${lensStyle(product.color)}"></div>
           <div class="cart-item-info">
             <h3>${product.name}</h3>
-            <p>Brand ${product.brand} · DIA ${product.dia} · Qty ${item.quantity}</p>
+            <p>Brand ${product.brand} · DIA ${product.dia}${product.axisLock ? ' · Axis-Lock' : ''} · Qty ${item.quantity}</p>
           </div>
           <span class="cart-item-price">${formatPrice(lineTotal)}</span>
           <button class="cart-item-remove" data-id="${product.id}" aria-label="Remove">&times;</button>

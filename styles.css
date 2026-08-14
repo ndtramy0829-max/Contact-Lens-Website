@@ -266,6 +266,16 @@ body {
   margin-bottom: 0;
 }
 
+.filter-group-special {
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.filter-group-special .filter-btn[data-value="axis-lock"].active {
+  background: var(--palm-leaf);
+  border-color: var(--palm-leaf);
+}
+
 .filter-group h3 {
   font-size: 0.75rem;
   font-weight: 600;
