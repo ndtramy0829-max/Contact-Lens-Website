@@ -101,6 +101,32 @@ function lensStyle(color) {
   return COLOR_STYLES[color] || COLOR_STYLES.gray;
 }
 
+let productImagesPreloaded = false;
+
+function collectProductImageUrls() {
+  const urls = new Set();
+
+  PRODUCTS.forEach((product) => {
+    if (product.image) urls.add(product.image);
+    if (product.images?.length) {
+      product.images.forEach((src) => urls.add(src));
+    }
+  });
+
+  return [...urls];
+}
+
+function preloadProductImages() {
+  if (productImagesPreloaded) return;
+  productImagesPreloaded = true;
+
+  collectProductImageUrls().forEach((path) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = encodeURI(path);
+  });
+}
+
 function isProductShotImage(src) {
   return src.toLowerCase().includes('no background');
 }
@@ -108,7 +134,7 @@ function isProductShotImage(src) {
 function productCardMedia(product) {
   if (product.image) {
     const alt = `${product.brand} ${product.name}`;
-    return `<div class="product-image-wrap product-image-wrap--product"><img class="product-image product-image--product-shot" src="${encodeURI(product.image)}" alt="${alt}" loading="lazy" /></div>`;
+    return `<div class="product-image-wrap product-image-wrap--product"><img class="product-image product-image--product-shot" src="${encodeURI(product.image)}" alt="${alt}" loading="eager" decoding="async" /></div>`;
   }
   return `<div class="product-media-slot"><div class="product-lens" style="background: ${lensStyle(product.color)}"></div></div>`;
 }
@@ -435,6 +461,7 @@ function initWelcomeWaveObserver() {
 }
 
 function initShopPage() {
+  preloadProductImages();
   updateCartCount();
   initWelcomeLetterSplit();
   initWelcomeWaveObserver();
@@ -605,6 +632,7 @@ function initShopPage() {
 }
 
 function initCartPage() {
+  preloadProductImages();
   updateCartCount();
 
   const cartEmpty = document.getElementById('cartEmpty');
