@@ -101,6 +101,112 @@ function lensStyle(color) {
   return COLOR_STYLES[color] || COLOR_STYLES.gray;
 }
 
+function isProductShotImage(src) {
+  return src.toLowerCase().includes('no background');
+}
+
+function productCardMedia(product) {
+  if (product.image) {
+    const alt = `${product.brand} ${product.name}`;
+    return `<div class="product-image-wrap product-image-wrap--product"><img class="product-image product-image--product-shot" src="${encodeURI(product.image)}" alt="${alt}" loading="lazy" /></div>`;
+  }
+  return `<div class="product-media-slot"><div class="product-lens" style="background: ${lensStyle(product.color)}"></div></div>`;
+}
+
+function productThumbMedia(product) {
+  if (product.image) {
+    const imgClass = isProductShotImage(product.image)
+      ? 'cart-item-image cart-item-image--product'
+      : 'cart-item-image';
+    return `<img class="${imgClass}" src="${encodeURI(product.image)}" alt="${product.name}" />`;
+  }
+  return `<div class="cart-item-lens" style="background: ${lensStyle(product.color)}"></div>`;
+}
+
+function setModalMedia(product) {
+  const mediaEl = document.getElementById('modalLens');
+  const modal = mediaEl?.closest('.modal');
+  if (!mediaEl) return;
+
+  if (product.images?.length) {
+    modal?.classList.add('has-media');
+    mediaEl.className = 'modal-media';
+    mediaEl.style.background = '';
+    mediaEl.innerHTML = product.images.map((src, index) => {
+      const productShot = index > 0 ? ' modal-image--product' : '';
+      return `<img class="modal-image${productShot}" src="${encodeURI(src)}" alt="${product.name}" />`;
+    }).join('');
+    return;
+  }
+
+  if (product.image) {
+    modal?.classList.add('has-media');
+    mediaEl.className = 'modal-media';
+    mediaEl.style.background = '';
+    mediaEl.innerHTML = `<img class="modal-image" src="${encodeURI(product.image)}" alt="${product.name}" />`;
+    return;
+  }
+
+  modal?.classList.remove('has-media');
+  mediaEl.className = 'modal-lens';
+  mediaEl.innerHTML = '';
+  mediaEl.style.background = lensStyle(product.color);
+}
+
+function resetModalAnimation(modal, overlay) {
+  if (!modal || !overlay) return;
+  modal.classList.remove('is-flipping-in', 'is-from-card');
+  modal.style.transition = '';
+  modal.style.transform = '';
+  modal.style.opacity = '';
+  overlay.style.transition = '';
+  overlay.style.opacity = '';
+}
+
+function animateModalFromCard(modal, overlay, sourceEl) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    overlay.style.opacity = '1';
+    return;
+  }
+
+  const cardRect = sourceEl.getBoundingClientRect();
+  const modalRect = modal.getBoundingClientRect();
+
+  const cardCx = cardRect.left + cardRect.width / 2;
+  const cardCy = cardRect.top + cardRect.height / 2;
+  const modalCx = modalRect.left + modalRect.width / 2;
+  const modalCy = modalRect.top + modalRect.height / 2;
+
+  const dx = cardCx - modalCx;
+  const dy = cardCy - modalCy;
+  const scale = cardRect.width / modalRect.width;
+
+  modal.classList.add('is-from-card');
+  modal.style.transition = 'none';
+  modal.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scale}) rotateY(-78deg)`;
+  modal.style.opacity = '0.4';
+  overlay.style.opacity = '0';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.style.transition = 'opacity 0.42s ease';
+      overlay.style.opacity = '1';
+      modal.style.transition =
+        'transform 0.64s cubic-bezier(0.34, 1.12, 0.64, 1), opacity 0.48s ease';
+      modal.style.transform = 'translate3d(0, 0, 0) scale(1) rotateY(0deg)';
+      modal.style.opacity = '1';
+    });
+  });
+
+  const onEnd = (event) => {
+    if (event.propertyName !== 'transform') return;
+    modal.removeEventListener('transitionend', onEnd);
+    resetModalAnimation(modal, overlay);
+  };
+
+  modal.addEventListener('transitionend', onEnd);
+}
+
 function matchesGdiaRange(gdia, rangeValue) {
   const range = GDIA_RANGES.find((r) => r.value === rangeValue);
   if (!range) return true;
@@ -358,14 +464,16 @@ function initShopPage() {
     });
   }
 
-  function productMeta(product) {
-    const parts = [
-      `DIA ${product.dia}`,
-      `GDIA ${product.gdia}`,
-      capitalize(product.color),
-    ];
-    if (product.axisLock) parts.push('Axis-Lock');
-    return parts.join(' · ');
+  function productCardMeta(product) {
+    const sizingLine = `DIA ${product.dia} · GDIA ${product.gdia}`;
+    const detailParts = [capitalize(product.color)];
+    if (product.axisLock) detailParts.push('Axis-Lock');
+    const detailLine = detailParts.join(' · ');
+
+    return `
+      <span class="product-meta-line">${sizingLine}</span>
+      <span class="product-meta-line">${detailLine}</span>
+    `;
   }
 
   function renderProducts() {
@@ -375,10 +483,10 @@ function initShopPage() {
 
     grid.innerHTML = filtered.map((p) => `
       <article class="product-card" data-id="${p.id}">
-        <div class="product-lens" style="background: ${lensStyle(p.color)}"></div>
+        ${productCardMedia(p)}
         <p class="product-brand">${p.brand}</p>
         <h3>${p.name}</h3>
-        <p class="product-meta">${productMeta(p)}</p>
+        <div class="product-meta">${productCardMeta(p)}</div>
         <p class="product-price">${formatPrice(p.price)}</p>
       </article>
     `).join('');
@@ -386,7 +494,7 @@ function initShopPage() {
     grid.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('click', () => {
         const product = PRODUCTS.find((p) => p.id === parseInt(card.dataset.id, 10));
-        if (product) openModal(product);
+        if (product) openModal(product, card);
       });
     });
   }
@@ -429,9 +537,9 @@ function initShopPage() {
     });
   });
 
-  function openModal(product) {
+  function openModal(product, cardEl) {
     activeProduct = product;
-    document.getElementById('modalLens').style.background = lensStyle(product.color);
+    setModalMedia(product);
     document.getElementById('modalBrand').textContent = product.brand;
     document.getElementById('modalTitle').textContent = product.name;
     document.getElementById('modalSpecs').innerHTML = `
@@ -444,13 +552,34 @@ function initShopPage() {
     `;
     document.getElementById('modalDesc').textContent = productDescription(product);
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
+
+    const modal = overlay.querySelector('.modal');
+    resetModalAnimation(modal, overlay);
+
     overlay.classList.remove('hidden');
+    overlay.classList.remove('is-opening');
     document.body.style.overflow = 'hidden';
+
+    const sourceEl = cardEl?.querySelector('.product-image-wrap, .product-media-slot, .product-lens');
+
+    if (modal && sourceEl) {
+      animateModalFromCard(modal, overlay, sourceEl);
+    } else if (modal) {
+      overlay.classList.add('is-opening');
+      modal.classList.remove('is-flipping-in');
+      void modal.offsetWidth;
+      modal.classList.add('is-flipping-in');
+      overlay.style.opacity = '1';
+    }
   }
 
   function closeModal() {
+    const modal = overlay.querySelector('.modal');
+    resetModalAnimation(modal, overlay);
     overlay.classList.add('hidden');
+    overlay.classList.remove('is-opening');
     document.body.style.overflow = '';
+    modal?.classList.remove('has-media');
     activeProduct = null;
   }
 
@@ -505,7 +634,7 @@ function initCartPage() {
 
       return `
         <li class="cart-item">
-          <div class="cart-item-lens" style="background: ${lensStyle(product.color)}"></div>
+          ${productThumbMedia(product)}
           <div class="cart-item-info">
             <h3>${product.name}</h3>
             <p>${product.brand} · DIA ${product.dia} · GDIA ${product.gdia}${product.axisLock ? ' · Axis-Lock' : ''} · Qty ${item.quantity}</p>
