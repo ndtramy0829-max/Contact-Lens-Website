@@ -22,6 +22,7 @@
   --shadow-md: 0 8px 28px rgba(63, 115, 115, 0.1);
   --shadow-lg: 0 20px 48px rgba(63, 115, 115, 0.14);
   --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-logo: 'Bodoni Moda', 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --radius: 14px;
   --radius-lg: 20px;
@@ -57,9 +58,8 @@ body {
   top: 0;
   z-index: 100;
   padding: 14px 24px;
-  background: rgba(242, 241, 240, 0.9);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px);
+  background: var(--ming);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .nav {
@@ -70,13 +70,29 @@ body {
   justify-content: space-between;
 }
 
-.logo {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--ming);
+.logo,
+.logo-hero {
+  font-family: var(--font-logo);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  font-optical-sizing: auto;
+  font-variation-settings: 'wght' 720, 'opsz' 20;
+  line-height: 1;
+}
+
+.logo-hero {
+  font-size: clamp(4rem, 11vw, 6.25rem);
+  font-variation-settings: 'wght' 700, 'opsz' 28;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-height: 1.32em;
+  padding: 0.1em 0 0.14em;
 }
 
 .cart-btn {
@@ -87,18 +103,18 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--ming);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
   text-decoration: none;
   transition: var(--transition);
 }
 
 .cart-btn:hover,
 .cart-btn.active {
-  background: var(--ming);
-  color: var(--anti-flash);
-  border-color: var(--ming);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
 .cart-count {
@@ -138,14 +154,6 @@ body {
   margin-bottom: 12px;
 }
 
-.welcome h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 600;
-  color: var(--ming);
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
 
 .welcome-desc {
   max-width: 480px;
@@ -958,8 +966,8 @@ body {
 /* Footer */
 .footer {
   padding: 28px 0;
-  border-top: 1px solid var(--border);
-  background: rgba(242, 241, 240, 0.88);
+  border-top: none;
+  background: var(--ming);
 }
 
 .footer-inner {
@@ -970,7 +978,7 @@ body {
 
 .footer p {
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 /* Mobile */
