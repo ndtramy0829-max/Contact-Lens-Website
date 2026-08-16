@@ -131,6 +131,67 @@ function isProductShotImage(src) {
   return src.toLowerCase().includes('no background');
 }
 
+const PRODUCT_LENS_BOX_PX = 106;
+const PRODUCT_LENS_TARGET_PX = 91;
+const PRODUCT_LENS_ALPHA_THRESHOLD = 128;
+
+function getProductLensTargetPx() {
+  const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--product-lens-display-size'));
+  return Number.isFinite(target) && target > 0 ? target : PRODUCT_LENS_TARGET_PX;
+}
+
+function normalizeProductShotImage(img) {
+  const run = () => {
+    const boxPx = img.getBoundingClientRect().width || PRODUCT_LENS_BOX_PX;
+    if (!boxPx) return;
+
+    const sample = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = sample;
+    canvas.height = sample;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0, sample, sample);
+    const { data, width, height } = ctx.getImageData(0, 0, sample, sample);
+    let minX = width;
+    let minY = height;
+    let maxX = 0;
+    let maxY = 0;
+
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const alpha = data[(y * width + x) * 4 + 3];
+        if (alpha > PRODUCT_LENS_ALPHA_THRESHOLD) {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+
+    if (minX >= maxX || minY >= maxY) return;
+
+    const contentFrac = Math.max(maxX - minX, maxY - minY) / sample;
+    const displayedLens = contentFrac * boxPx;
+    const targetPx = getProductLensTargetPx();
+    const scale = targetPx / displayedLens;
+
+    if (scale > 0.55 && scale < 2.4) {
+      img.style.transform = `scale(${scale})`;
+      img.style.transformOrigin = 'center center';
+    }
+  };
+
+  if (img.complete && img.naturalWidth) run();
+  else img.addEventListener('load', run, { once: true });
+}
+
+function normalizeProductShotImages(root = document) {
+  root.querySelectorAll('.product-image--product-shot').forEach(normalizeProductShotImage);
+}
+
 function productCardMedia(product) {
   if (product.image) {
     const alt = `${product.brand} ${product.name}`;
@@ -524,6 +585,8 @@ function initShopPage() {
         if (product) openModal(product, card);
       });
     });
+
+    normalizeProductShotImages(grid);
   }
 
   buildFilterGroups();
