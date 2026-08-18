@@ -220,8 +220,8 @@ function setModalMedia(product) {
     mediaEl.className = 'modal-media';
     mediaEl.style.background = '';
     mediaEl.innerHTML = product.images.map((src, index) => {
-      const productShot = index > 0 ? ' modal-image--product' : '';
-      return `<img class="modal-image${productShot}" src="${encodeURI(src)}" alt="${product.name}" />`;
+      const imageType = index === 0 ? ' modal-image--model' : ' modal-image--product';
+      return `<img class="modal-image${imageType}" src="${encodeURI(src)}" alt="${product.name}" />`;
     }).join('');
     return;
   }
@@ -230,7 +230,7 @@ function setModalMedia(product) {
     modal?.classList.add('has-media');
     mediaEl.className = 'modal-media';
     mediaEl.style.background = '';
-    mediaEl.innerHTML = `<img class="modal-image" src="${encodeURI(product.image)}" alt="${product.name}" />`;
+    mediaEl.innerHTML = `<img class="modal-image modal-image--product" src="${encodeURI(product.image)}" alt="${product.name}" />`;
     return;
   }
 
@@ -632,15 +632,19 @@ function initShopPage() {
     setModalMedia(product);
     document.getElementById('modalBrand').textContent = product.brand;
     document.getElementById('modalTitle').textContent = product.name;
-    document.getElementById('modalSpecs').innerHTML = `
-      <li>1-Day Wear</li>
-      <li>0.00 Rx</li>
-      <li>DIA ${formatSpecValue(product.dia)}</li>
-      <li>GDIA ${formatSpecValue(product.gdia)}</li>
-      <li>${capitalize(product.color)}</li>
-      ${product.axisLock ? '<li>Axis-Lock</li>' : ''}
-    `;
-    document.getElementById('modalDesc').textContent = productDescription(product);
+    const specRows = [
+      ['1-Day Wear', '0.00 Rx'],
+      [`DIA ${formatSpecValue(product.dia)}`, `GDIA ${formatSpecValue(product.gdia)}`, capitalize(product.color)],
+    ];
+    if (product.axisLock) specRows.push(['Axis-Lock']);
+
+    document.getElementById('modalSpecs').innerHTML = specRows
+      .map((pills) => `
+        <li class="modal-specs-row">
+          ${pills.map((pill) => `<span class="modal-spec-pill">${pill}</span>`).join('')}
+        </li>
+      `)
+      .join('');
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
 
     const modal = overlay.querySelector('.modal');
