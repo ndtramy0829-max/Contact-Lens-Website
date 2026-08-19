@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — MYE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="logo">mye</a>
+      <a href="cart.html" class="cart-btn" aria-label="View cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M6 6h15l-1.5 9h-12z"/>
+          <path d="M6 6L5 3H2"/>
+          <circle cx="9" cy="20" r="1"/>
+          <circle cx="18" cy="20" r="1"/>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="checkout-page">
+    <div class="container">
+
+      <!-- Step indicator -->
+      <div class="checkout-steps" id="checkoutSteps">
+        <div class="checkout-step is-active" id="stepIndicator1">
+          <span class="checkout-step-num">1</span>
+          <span>Delivery</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step" id="stepIndicator2">
+          <span class="checkout-step-num">2</span>
+          <span>Review</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step" id="stepIndicator3">
+          <span class="checkout-step-num">3</span>
+          <span>Confirmation</span>
+        </div>
+      </div>
+
+      <!-- ── STEP 1: Delivery ────────────────────────────── -->
+      <div id="step1">
+        <a href="cart.html" class="back-link">&larr; Back to cart</a>
+        <h2 class="checkout-section-title">How would you like to receive your order?</h2>
+
+        <div class="delivery-options">
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="pickup" id="deliveryPickup" checked>
+            <div class="delivery-option-card">
+              <div class="delivery-option-icon">🏪</div>
+              <div class="delivery-option-label">Pickup</div>
+              <div class="delivery-option-sub">OC / SD only — Free</div>
+            </div>
+          </label>
+
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="shipping" id="deliveryShipping">
+            <div class="delivery-option-card">
+              <div class="delivery-option-icon">📦</div>
+              <div class="delivery-option-label">Shipping</div>
+              <div class="delivery-option-sub">U.S. only — +$5.00</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Shipping address form (hidden until shipping is selected) -->
+        <div class="shipping-form hidden" id="shippingForm">
+          <div class="form-row">
+            <label class="form-label" for="shipName">Full Name</label>
+            <input class="form-input" type="text" id="shipName" name="shipName" placeholder="Jane Doe" autocomplete="name">
+            <div class="form-error hidden" id="errShipName">Please enter your full name.</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="shipAddr1">Address Line 1</label>
+            <input class="form-input" type="text" id="shipAddr1" name="shipAddr1" placeholder="123 Ocean Ave" autocomplete="address-line1">
+            <div class="form-error hidden" id="errShipAddr1">Please enter your street address.</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="shipAddr2">Address Line 2 / Apt / Suite <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input class="form-input" type="text" id="shipAddr2" name="shipAddr2" placeholder="Apt 4B" autocomplete="address-line2">
+          </div>
+
+          <div class="form-row-inline">
+            <div>
+              <label class="form-label" for="shipCity">City</label>
+              <input class="form-input" type="text" id="shipCity" name="shipCity" placeholder="San Diego" autocomplete="address-level2">
+              <div class="form-error hidden" id="errShipCity">Please enter your city.</div>
+            </div>
+            <div>
+              <label class="form-label" for="shipState">State</label>
+              <input class="form-input" type="text" id="shipState" name="shipState" placeholder="CA" maxlength="2" autocomplete="address-level1">
+              <div class="form-error hidden" id="errShipState">Required.</div>
+            </div>
+            <div>
+              <label class="form-label" for="shipZip">ZIP</label>
+              <input class="form-input" type="text" id="shipZip" name="shipZip" placeholder="92101" maxlength="10" inputmode="numeric" autocomplete="postal-code">
+              <div class="form-error hidden" id="errShipZip">Required.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order summary -->
+        <div class="order-summary" id="step1Summary"></div>
+
+        <button class="btn btn-primary btn-full" id="nextStepBtn">Next Step →</button>
+      </div>
+
+      <!-- ── STEP 2: Review ──────────────────────────────── -->
+      <div id="step2" class="hidden">
+        <button class="back-link" id="backToStep1" style="background:none;border:none;cursor:pointer;padding:0;font-size:0.88rem;">&larr; Edit delivery</button>
+        <h2 class="checkout-section-title">Review your order</h2>
+
+        <!-- Receipt card -->
+        <div class="receipt-card" id="receiptCard"></div>
+
+        <!-- Contact method -->
+        <div class="contact-section">
+          <p class="contact-title">How would you like us to contact you about your order?</p>
+
+          <div class="contact-options">
+            <label class="contact-option">
+              <input type="radio" name="contact" value="instagram" id="contactInstagram" checked>
+              <div class="contact-option-card">
+                <div class="contact-option-icon">📸</div>
+                <div class="contact-option-label">Instagram</div>
+              </div>
+            </label>
+
+            <label class="contact-option">
+              <input type="radio" name="contact" value="messenger" id="contactMessenger">
+              <div class="contact-option-card">
+                <div class="contact-option-icon">💬</div>
+                <div class="contact-option-label">Facebook Messenger</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Instagram field -->
+          <div class="contact-field" id="instagramField">
+            <label class="form-label" for="instagramHandle">Your Instagram Username</label>
+            <input class="form-input" type="text" id="instagramHandle" placeholder="@username" autocomplete="off" autocapitalize="none">
+            <div class="form-error hidden" id="errInstagram">Please enter your Instagram username.</div>
+          </div>
+
+          <!-- Messenger note -->
+          <div class="contact-field hidden" id="messengerNote">
+            <div class="contact-note">
+              After submitting, you'll be able to message us directly through Facebook Messenger to confirm your order details. Tap <strong>Message us here</strong> on the next screen.
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="submitOrderBtn">Submit Order</button>
+      </div>
+
+      <!-- ── STEP 3: Confirmation ────────────────────────── -->
+      <div id="step3" class="hidden">
+        <div class="confirmation-screen" id="confirmationScreen"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span class="logo">mye</span>
+      <p>&copy; 2026 MYE. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="products-data.js"></script>
+  <script src="script.js"></script>
+  <script src="checkout.js"></script>
+  <script>
+    initCheckoutPage();
+  </script>
+</body>
+</html>

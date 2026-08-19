@@ -751,7 +751,7 @@ function initCartPage() {
   }
 
   document.getElementById('checkoutBtn').addEventListener('click', () => {
-    alert('Checkout coming soon!');
+    window.location.href = 'checkout.html';
   });
 
   renderCart();
