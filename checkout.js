@@ -64,8 +64,8 @@ function renderReceiptCard(cartItems, delivery, address, orderNum) {
   const total = subtotal + shippingCost;
 
   const deliveryBadge = delivery === 'shipping'
-    ? '📦 Shipping'
-    : '🏪 Pickup — OC / SD';
+    ? 'Shipping'
+    : 'Pickup — OC / SD';
 
   const itemsHtml = cartItems.map((item) => `
     <li class="receipt-item">
@@ -142,7 +142,7 @@ function renderConfirmation(contactMethod, orderNum, instagramHandle) {
       Message us on Facebook Messenger to confirm<br>your order details.
     </p>
     <a href="${messengerUrl}" target="_blank" rel="noopener" class="confirmation-messenger-btn">
-      💬 Message us here
+      Message us here
     </a>
     <br>
     <a href="index.html" class="btn btn-outline" style="margin-top:8px;">Continue Shopping</a>
@@ -270,15 +270,53 @@ function initCheckoutPage() {
 
   function refreshContactFields() {
     const contact = currentContact();
+    const contactOptions = document.getElementById('contactOptions');
     document.getElementById('instagramField').classList.toggle('hidden', contact !== 'instagram');
     document.getElementById('messengerNote').classList.toggle('hidden', contact !== 'messenger');
+    contactOptions?.classList.toggle('instagram-selected', contact === 'instagram');
+    contactOptions?.classList.toggle('messenger-selected', contact === 'messenger');
   }
 
   refreshContactFields();
 
   document.querySelectorAll('input[name="contact"]').forEach((radio) => {
-    radio.addEventListener('change', refreshContactFields);
+    radio.addEventListener('change', () => {
+      refreshContactFields();
+      moveInstagramFieldForMobile();
+    });
   });
+
+  // On mobile, move the Instagram username field directly under the
+  // Instagram option card (instead of after both option cards).
+  const instagramField = document.getElementById('instagramField');
+  const instagramDefaultParent = instagramField?.parentNode;
+  const instagramDefaultNextSibling = instagramField?.nextSibling;
+
+  function isMobileLayout() {
+    return window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  function moveInstagramFieldForMobile() {
+    if (!instagramField || !instagramDefaultParent) return;
+
+    const mobile = isMobileLayout();
+    if (mobile) {
+      const instagramOptionInput = document.getElementById('contactInstagram');
+      const instagramOptionLabel = instagramOptionInput?.closest('label.contact-option');
+      if (instagramOptionLabel) instagramOptionLabel.insertAdjacentElement('afterend', instagramField);
+      return;
+    }
+
+    // Restore the original position for desktop.
+    if (instagramDefaultNextSibling && instagramDefaultNextSibling.parentNode === instagramDefaultParent) {
+      instagramDefaultParent.insertBefore(instagramField, instagramDefaultNextSibling);
+    } else {
+      instagramDefaultParent.appendChild(instagramField);
+    }
+  }
+
+  moveInstagramFieldForMobile();
+  window.addEventListener('resize', moveInstagramFieldForMobile);
 
   document.getElementById('submitOrderBtn').addEventListener('click', () => {
     const contact = currentContact();

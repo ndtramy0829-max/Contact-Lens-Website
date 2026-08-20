@@ -634,8 +634,8 @@ body {
 
 .modal {
   position: relative;
-  width: 85%;
-  max-width: 85%;
+  width: 27.5%;
+  max-width: 760px;
   max-height: 92vh;
   overflow: hidden;
   padding: 36px 28px 28px;
@@ -680,8 +680,20 @@ body {
 }
 
 .modal.has-media {
-  max-width: 85%;
+  max-width: 760px;
   padding: 30px 24px 24px;
+}
+
+/* Make product modal wide enough on small screens */
+@media (max-width: 768px) {
+  .modal {
+    width: 88%;
+    max-width: 88%;
+  }
+
+  .modal.has-media {
+    max-width: 88%;
+  }
 }
 
 .modal-media {
@@ -722,8 +734,9 @@ body {
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 0;
+  right: 0;
+  transform: translate(-4px, 4px);
   width: 34px;
   height: 34px;
   border: none;
@@ -733,6 +746,7 @@ body {
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
+  z-index: 2;
   transition: var(--transition);
 }
 
@@ -1005,8 +1019,14 @@ body {
   padding: 40px 0 80px;
 }
 
-.checkout-page .container {
-  max-width: 640px;
+@media (min-width: 769px) {
+  .checkout-page .container,
+  .cart-page .container {
+    width: 60%;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* Step indicator */
@@ -1391,9 +1411,19 @@ body {
   margin-bottom: 14px;
 }
 
+.contact-or-separator {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin: 2px 0;
+}
+
 .contact-option {
   position: relative;
   cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition);
 }
 
 .contact-option input[type="radio"] {
@@ -1439,6 +1469,14 @@ body {
 
 .contact-option input:checked + .contact-option-card .contact-option-label {
   color: var(--ming);
+}
+
+.contact-options.instagram-selected .contact-option--messenger {
+  opacity: 0.42;
+}
+
+.contact-options.messenger-selected .contact-option--instagram {
+  opacity: 0.42;
 }
 
 .contact-field {

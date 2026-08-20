@@ -55,7 +55,6 @@
           <label class="delivery-option">
             <input type="radio" name="delivery" value="pickup" id="deliveryPickup" checked>
             <div class="delivery-option-card">
-              <div class="delivery-option-icon">🏪</div>
               <div class="delivery-option-label">Pickup</div>
               <div class="delivery-option-sub">OC / SD only — Free</div>
             </div>
@@ -64,7 +63,6 @@
           <label class="delivery-option">
             <input type="radio" name="delivery" value="shipping" id="deliveryShipping">
             <div class="delivery-option-card">
-              <div class="delivery-option-icon">📦</div>
               <div class="delivery-option-label">Shipping</div>
               <div class="delivery-option-sub">U.S. only — +$5.00</div>
             </div>
@@ -127,19 +125,19 @@
         <div class="contact-section">
           <p class="contact-title">How would you like us to contact you about your order?</p>
 
-          <div class="contact-options">
-            <label class="contact-option">
+          <div class="contact-options" id="contactOptions">
+            <label class="contact-option contact-option--instagram">
               <input type="radio" name="contact" value="instagram" id="contactInstagram" checked>
               <div class="contact-option-card">
-                <div class="contact-option-icon">📸</div>
                 <div class="contact-option-label">Instagram</div>
               </div>
             </label>
 
-            <label class="contact-option">
+            <div class="contact-or-separator" aria-hidden="true">- or -</div>
+
+            <label class="contact-option contact-option--messenger">
               <input type="radio" name="contact" value="messenger" id="contactMessenger">
               <div class="contact-option-card">
-                <div class="contact-option-icon">💬</div>
                 <div class="contact-option-label">Facebook Messenger</div>
               </div>
             </label>
@@ -147,8 +145,7 @@
 
           <!-- Instagram field -->
           <div class="contact-field" id="instagramField">
-            <label class="form-label" for="instagramHandle">Your Instagram Username</label>
-            <input class="form-input" type="text" id="instagramHandle" placeholder="@username" autocomplete="off" autocapitalize="none">
+            <input class="form-input" type="text" id="instagramHandle" placeholder="@your instagram username" autocomplete="off" autocapitalize="none">
             <div class="form-error hidden" id="errInstagram">Please enter your Instagram username.</div>
           </div>
 
