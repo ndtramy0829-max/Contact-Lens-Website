@@ -122,8 +122,8 @@ function renderConfirmation(contactMethod, orderNum, instagramHandle) {
       <div class="confirmation-heart">♡</div>
       <h2 class="confirmation-title">Thank you for placing<br>an order with us!</h2>
       <p class="confirmation-subtitle">
-        Check your message requests from<br>
-        <strong>@mye.lenses.shop</strong> &lt;3
+        Message <strong>@mye.lenses.shop</strong> from your Instagram account<br>
+        so we can send your order confirmation (${orderNum}).
       </p>
       <a href="index.html" class="btn btn-outline">Continue Shopping</a>
     `;
@@ -318,8 +318,11 @@ function initCheckoutPage() {
   moveInstagramFieldForMobile();
   window.addEventListener('resize', moveInstagramFieldForMobile);
 
-  document.getElementById('submitOrderBtn').addEventListener('click', () => {
+  document.getElementById('submitOrderBtn').addEventListener('click', async () => {
     const contact = currentContact();
+    const submitBtn = document.getElementById('submitOrderBtn');
+    const submitErr = document.getElementById('submitOrderError');
+    submitErr?.classList.add('hidden');
 
     if (contact === 'instagram') {
       const handle = document.getElementById('instagramHandle').value.trim();
@@ -337,16 +340,33 @@ function initCheckoutPage() {
       errEl.classList.add('hidden');
     }
 
+    const delivery = currentDelivery();
     const instagramHandle = document.getElementById('instagramHandle').value.trim();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Placing order...';
 
-    document.getElementById('confirmationScreen').innerHTML =
-      renderConfirmation(contact, orderNum, instagramHandle);
+    try {
+      const result = await callShopFunction('place-order', {
+        delivery,
+        contactMethod: contact,
+        instagram: contact === 'instagram' ? instagramHandle : null,
+        shipping: delivery === 'shipping' ? getShippingAddress() : null,
+        items: cartItems.map((item) => ({ id: item.product.id, quantity: item.quantity })),
+      });
 
-    // Clear the cart after a successful "order"
-    saveCart([]);
-    updateCartCount();
+      orderNum = result.orderNumber;
+      document.getElementById('confirmationScreen').innerHTML =
+        renderConfirmation(contact, orderNum, instagramHandle);
 
-    setStep(3);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      saveCart([]);
+      updateCartCount();
+      setStep(3);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      submitErr.textContent = err.message || 'Could not place order.';
+      submitErr.classList.remove('hidden');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Order';
+    }
   });
 }

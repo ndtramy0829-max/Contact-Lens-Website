@@ -1,5 +1,18 @@
 const CART_KEY = 'myeyes-cart';
 
+let productStock = {};
+
+function availableFor(productId) {
+  const row = productStock[productId];
+  if (!row) return null;
+  return row.available;
+}
+
+function isSoldOut(productId) {
+  const available = availableFor(productId);
+  return available !== null && available <= 0;
+}
+
 const COLOR_STYLES = {
   gray: 'radial-gradient(circle at 35% 35%, #b8c4c8, #7a8589)',
   hazel: 'radial-gradient(circle at 35% 35%, #c4a882, #8b6f4a)',
@@ -73,9 +86,15 @@ function updateCartCount() {
 function addToCart(productId) {
   const product = PRODUCTS.find((p) => p.id === productId);
   if (!product) return;
+  if (isSoldOut(productId)) return;
 
   const cart = getCart();
   const existing = cart.find((item) => item.id === productId);
+  const nextQty = existing ? existing.quantity + 1 : 1;
+
+  if (Number.isFinite(availableFor(productId)) && nextQty > availableFor(productId)) {
+    return;
+  }
 
   if (existing) {
     existing.quantity += 1;
@@ -576,6 +595,7 @@ function initShopPage() {
         <h3>${p.name}</h3>
         <div class="product-meta">${productCardMeta(p)}</div>
         <p class="product-price">${formatPrice(p.price)}</p>
+        ${isSoldOut(p.id) ? '<p class="product-sold-out">Sold out</p>' : ''}
       </article>
     `).join('');
 
@@ -647,6 +667,20 @@ function initShopPage() {
       .join('');
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
 
+    const soldOut = isSoldOut(product.id);
+    const addBtn = document.getElementById('modalAddToCart');
+    const waitlistForm = document.getElementById('waitlistForm');
+    addBtn.textContent = soldOut ? 'Sold out' : 'Add to Cart';
+    addBtn.disabled = soldOut;
+    addBtn.classList.toggle('hidden', soldOut);
+    waitlistForm?.classList.toggle('hidden', !soldOut);
+    document.getElementById('waitlistError')?.classList.add('hidden');
+    document.getElementById('waitlistSuccess')?.classList.add('hidden');
+    const igInput = document.getElementById('waitlistInstagram');
+    const phoneInput = document.getElementById('waitlistPhone');
+    if (igInput) igInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+
     const modal = overlay.querySelector('.modal');
     resetModalAnimation(modal, overlay);
 
@@ -683,9 +717,37 @@ function initShopPage() {
   });
 
   document.getElementById('modalAddToCart').addEventListener('click', () => {
-    if (activeProduct) {
+    if (activeProduct && !isSoldOut(activeProduct.id)) {
       addToCart(activeProduct.id);
       closeModal();
+    }
+  });
+
+  document.getElementById('waitlistSubmit')?.addEventListener('click', async () => {
+    if (!activeProduct) return;
+    const errorEl = document.getElementById('waitlistError');
+    const successEl = document.getElementById('waitlistSuccess');
+    const instagram = document.getElementById('waitlistInstagram').value.trim();
+    const phone = document.getElementById('waitlistPhone').value.trim();
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    if (!instagram && !phone) {
+      errorEl.textContent = 'Enter an Instagram username or a phone number.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      await callShopFunction('join-waitlist', {
+        productId: activeProduct.id,
+        instagram,
+        phone,
+      });
+      successEl.classList.remove('hidden');
+    } catch (err) {
+      errorEl.textContent = err.message || 'Could not join waitlist.';
+      errorEl.classList.remove('hidden');
     }
   });
 
@@ -695,6 +757,10 @@ function initShopPage() {
     }
   });
 
+  loadProductStockMap().then((map) => {
+    productStock = map;
+    renderProducts();
+  });
   renderProducts();
 }
 

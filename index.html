@@ -73,11 +73,24 @@
         <ul class="modal-specs" id="modalSpecs"></ul>
         <p class="modal-desc" id="modalDesc"></p>
         <p class="modal-price" id="modalPrice"></p>
-        <button class="btn btn-primary" id="modalAddToCart">Add to Cart</button>
+        <div class="modal-actions" id="modalActions">
+          <button class="btn btn-primary" id="modalAddToCart">Add to Cart</button>
+        </div>
+        <div class="waitlist-form hidden" id="waitlistForm">
+          <p class="waitlist-copy">Join the waitlist. Instagram is preferred; use a phone number if you do not have one.</p>
+          <input class="form-input" type="text" id="waitlistInstagram" placeholder="@your instagram username" autocomplete="off" autocapitalize="none">
+          <input class="form-input" type="tel" id="waitlistPhone" placeholder="Phone number (if no Instagram)" autocomplete="tel">
+          <p class="form-error hidden" id="waitlistError"></p>
+          <p class="waitlist-success hidden" id="waitlistSuccess">You're on the waitlist.</p>
+          <button class="btn btn-primary btn-full" type="button" id="waitlistSubmit">Join waitlist</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="api-client.js"></script>
   <script src="products-data.js"></script>
   <script src="script.js"></script>
   <script>
