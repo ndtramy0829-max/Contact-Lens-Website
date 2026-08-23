@@ -1,5 +1,13 @@
 const ADMIN_TOKEN_KEY = 'mye-admin-token';
 
+const SEARCH_PLACEHOLDERS = {
+  inventory: 'Search products...',
+  orders: 'Search orders...',
+  waitlist: 'Search waitlist...',
+};
+
+let currentTab = 'inventory';
+
 function adminToken() {
   return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
 }
@@ -31,6 +39,22 @@ function money(value) {
   return `$${Number(value).toFixed(2)}`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function applySearch() {
+  const query = (document.getElementById('adminSearch')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('#adminPanel [data-search]').forEach((row) => {
+    const haystack = (row.dataset.search || '').toLowerCase();
+    row.classList.toggle('hidden', Boolean(query) && !haystack.includes(query));
+  });
+}
+
 function renderInventory(products) {
   return `
     <div class="admin-table-wrap">
@@ -45,13 +69,17 @@ function renderInventory(products) {
         </thead>
         <tbody>
           ${products.map((p) => `
-            <tr>
-              <td>${p.brand} ${p.name}</td>
-              <td><input class="admin-qty" data-available="${p.id}" type="number" min="0" value="${p.available_pairs}"></td>
+            <tr class="admin-row" data-search="${escapeHtml(`${p.brand} ${p.name}`)}">
+              <td>${escapeHtml(p.brand)} ${escapeHtml(p.name)}</td>
+              <td>
+                <span class="admin-qty-view">${p.available_pairs}</span>
+                <input class="admin-qty" data-available="${p.id}" type="number" min="0" value="${p.available_pairs}">
+              </td>
               <td>${p.sold_pairs}</td>
               <td class="admin-actions">
-                <button class="btn btn-primary" data-save-stock="${p.id}">Save</button>
-                <button class="btn btn-outline" data-notify="${p.id}">Notify waitlist</button>
+                <button class="btn btn-outline" type="button" data-edit-stock="${p.id}">Edit</button>
+                <button class="btn btn-primary" type="button" data-save-stock="${p.id}">Save</button>
+                <button class="btn btn-outline" type="button" data-notify="${p.id}">Notify waitlist</button>
               </td>
             </tr>
           `).join('')}
@@ -75,24 +103,35 @@ function renderOrders(orders) {
           </tr>
         </thead>
         <tbody>
-          ${orders.map((o) => `
-            <tr>
+          ${orders.map((o) => {
+            const items = (o.items || []).map((i) => `${i.name} x${i.quantity}`).join('<br>');
+            const search = [
+              o.order_number,
+              o.delivery_type,
+              o.contact_method,
+              o.status,
+              o.instagram_username,
+              ...(o.items || []).map((i) => i.name),
+            ].join(' ');
+            return `
+            <tr data-search="${escapeHtml(search)}">
               <td>
-                <strong>${o.order_number}</strong><br>
-                ${o.delivery_type} · ${o.contact_method}
-                ${o.instagram_username ? `<br>@${o.instagram_username}` : ''}
+                <strong>${escapeHtml(o.order_number)}</strong><br>
+                ${escapeHtml(o.delivery_type)} · ${escapeHtml(o.contact_method)}
+                ${o.instagram_username ? `<br>@${escapeHtml(o.instagram_username)}` : ''}
               </td>
-              <td>${(o.items || []).map((i) => `${i.name} x${i.quantity}`).join('<br>')}</td>
+              <td>${items}</td>
               <td>${money(o.total)}</td>
-              <td><span class="admin-status ${o.status}">${o.status}</span></td>
+              <td><span class="admin-status ${escapeHtml(o.status)}">${escapeHtml(o.status)}</span></td>
               <td class="admin-actions">
                 ${o.status === 'waiting' ? `
-                  <button class="btn btn-primary" data-complete="${o.id}">Mark complete</button>
-                  <button class="btn btn-outline" data-cancel="${o.id}">Cancel</button>
+                  <button class="btn btn-primary" type="button" data-complete="${o.id}">Mark complete</button>
+                  <button class="btn btn-outline" type="button" data-cancel="${o.id}">Cancel</button>
                 ` : ''}
               </td>
             </tr>
-          `).join('')}
+          `;
+          }).join('')}
         </tbody>
       </table>
     </div>
@@ -112,14 +151,18 @@ function renderWaitlist(entries) {
           </tr>
         </thead>
         <tbody>
-          ${entries.map((w) => `
-            <tr>
-              <td>${w.product_name}</td>
-              <td>${w.instagram_username ? `@${w.instagram_username}` : w.phone || ''}</td>
-              <td>${w.status}</td>
-              <td>${new Date(w.created_at).toLocaleString()}</td>
+          ${entries.map((w) => {
+            const contact = w.instagram_username ? `@${w.instagram_username}` : (w.phone || '');
+            const search = `${w.product_name} ${contact} ${w.status}`;
+            return `
+            <tr data-search="${escapeHtml(search)}">
+              <td>${escapeHtml(w.product_name)}</td>
+              <td>${escapeHtml(contact)}</td>
+              <td>${escapeHtml(w.status)}</td>
+              <td>${escapeHtml(new Date(w.created_at).toLocaleString())}</td>
             </tr>
-          `).join('')}
+          `;
+          }).join('')}
         </tbody>
       </table>
     </div>
@@ -127,7 +170,13 @@ function renderWaitlist(entries) {
 }
 
 async function loadTab(tab) {
+  currentTab = tab;
   showError('');
+  const search = document.getElementById('adminSearch');
+  if (search) {
+    search.placeholder = SEARCH_PLACEHOLDERS[tab] || 'Search...';
+    search.value = '';
+  }
   const panel = document.getElementById('adminPanel');
   panel.innerHTML = '<p>Loading...</p>';
   try {
@@ -141,6 +190,7 @@ async function loadTab(tab) {
       const { waitlist } = await adminRequest('list-waitlist');
       panel.innerHTML = renderWaitlist(waitlist);
     }
+    applySearch();
   } catch (err) {
     panel.innerHTML = '';
     showError(err.message);
@@ -184,11 +234,25 @@ document.querySelectorAll('.admin-tab').forEach((tab) => {
   });
 });
 
+document.getElementById('adminSearch').addEventListener('input', applySearch);
+
 document.getElementById('adminPanel').addEventListener('click', async (event) => {
-  const saveId = event.target.dataset.saveStock;
-  const notifyId = event.target.dataset.notify;
-  const completeId = event.target.dataset.complete;
-  const cancelId = event.target.dataset.cancel;
+  const editBtn = event.target.closest('[data-edit-stock]');
+  const saveId = event.target.closest('[data-save-stock]')?.dataset.saveStock;
+  const notifyId = event.target.closest('[data-notify]')?.dataset.notify;
+  const completeId = event.target.closest('[data-complete]')?.dataset.complete;
+  const cancelId = event.target.closest('[data-cancel]')?.dataset.cancel;
+
+  if (editBtn) {
+    const row = editBtn.closest('tr');
+    document.querySelectorAll('.admin-row.is-editing').forEach((openRow) => {
+      if (openRow !== row) openRow.classList.remove('is-editing');
+    });
+    row.classList.add('is-editing');
+    row.querySelector('.admin-qty')?.focus();
+    return;
+  }
+
   try {
     if (saveId) {
       const input = document.querySelector(`[data-available="${saveId}"]`);

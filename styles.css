@@ -1713,12 +1713,32 @@ body {
   color: var(--text-muted);
 }
 
+.admin-search {
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+.admin-qty-view {
+  display: inline-block;
+  min-width: 2ch;
+}
+
 .admin-qty {
   width: 72px;
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
   font-family: var(--font-body);
+}
+
+.admin-row.is-editing .admin-qty-view,
+.admin-row.is-editing [data-edit-stock] {
+  display: none;
+}
+
+.admin-row:not(.is-editing) .admin-qty,
+.admin-row:not(.is-editing) [data-save-stock] {
+  display: none;
 }
 
 .admin-login {
