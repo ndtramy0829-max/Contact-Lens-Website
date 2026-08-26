@@ -1660,11 +1660,19 @@ body {
   padding: 36px 0 80px;
 }
 
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0 24px;
+}
+
 .admin-tabs {
   display: flex;
   gap: 8px;
-  margin: 20px 0 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .admin-tab {
@@ -1677,6 +1685,7 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .admin-tab.is-active {
@@ -1714,8 +1723,35 @@ body {
 }
 
 .admin-search {
-  max-width: 420px;
-  margin-bottom: 16px;
+  width: min(280px, 100%);
+  max-width: 280px;
+  margin: 0;
+  margin-left: auto;
+  flex: 0 1 280px;
+}
+
+@media (max-width: 768px) {
+  .admin-toolbar {
+    gap: 8px;
+  }
+
+  .admin-tabs {
+    gap: 6px;
+  }
+
+  .admin-tab {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+
+  .admin-search {
+    width: min(140px, 38vw);
+    max-width: 160px;
+    flex: 1 1 120px;
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
 }
 
 .admin-qty-view {

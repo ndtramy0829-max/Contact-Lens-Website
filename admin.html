@@ -32,12 +32,14 @@
         <p class="welcome-desc" style="margin:0 0 8px;max-width:none;text-align:left;">
           Waiting orders auto-cancel after 24 hours and return stock. Completing payment increases sold count.
         </p>
-        <div class="admin-tabs">
-          <button class="admin-tab is-active" data-tab="inventory">Inventory</button>
-          <button class="admin-tab" data-tab="orders">Orders</button>
-          <button class="admin-tab" data-tab="waitlist">Waitlist</button>
+        <div class="admin-toolbar">
+          <div class="admin-tabs">
+            <button class="admin-tab is-active" data-tab="inventory">Inventory</button>
+            <button class="admin-tab" data-tab="orders">Orders</button>
+            <button class="admin-tab" data-tab="waitlist">Waitlist</button>
+          </div>
+          <input class="form-input admin-search" id="adminSearch" type="search" placeholder="Search products..." autocomplete="off">
         </div>
-        <input class="form-input admin-search" id="adminSearch" type="search" placeholder="Search products..." autocomplete="off">
         <p class="form-error hidden" id="adminError"></p>
         <div id="adminPanel"></div>
       </div>
