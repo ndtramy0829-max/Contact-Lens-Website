@@ -37,9 +37,9 @@ const GDIA_RANGES = [
 ];
 
 const FILTER_LAYOUT = {
-  dia: 'pairs',
-  gdia: 'pairs',
-  color: 'pairs',
+  dia: 'row',
+  gdia: 'grid',
+  color: 'color-labels',
   special: 'stack',
 };
 
@@ -54,6 +54,35 @@ function formatFilterLabel(value) {
 
 function formatSpecValue(value) {
   return typeof value === 'number' ? String(value) : value;
+}
+
+function buildModalSpecRows(product) {
+  const row3 = product.axisLock
+    ? [capitalize(product.color), 'Axis-Lock']
+    : [capitalize(product.color)];
+
+  return [
+    ['1-Day Wear', '0.00 Rx'],
+    [`DIA ${formatSpecValue(product.dia)}`, `GDIA ${formatSpecValue(product.gdia)}`],
+    row3,
+  ];
+}
+
+function formatProductCardTitle(name) {
+  const match = name.match(/^(.+?)\s*-\s*(.+)$/);
+  if (!match) {
+    return {
+      className: 'product-card-title',
+      html: name,
+    };
+  }
+
+  const before = match[1].trim();
+  const after = match[2].trim();
+  return {
+    className: 'product-card-title product-card-title--split',
+    html: `<span class="product-card-title-line">${before}-</span><span class="product-card-title-line">${after}</span>`,
+  };
 }
 
 function productDescription(product) {
@@ -154,14 +183,22 @@ const PRODUCT_LENS_BOX_PX = 106;
 const PRODUCT_LENS_TARGET_PX = 91;
 const PRODUCT_LENS_ALPHA_THRESHOLD = 128;
 
-function getProductLensTargetPx() {
-  const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--product-lens-display-size'));
+function getProductLensBoxPx(img) {
+  const scope = img?.closest('.product-card-image') || document.documentElement;
+  const box = parseFloat(getComputedStyle(scope).getPropertyValue('--product-lens-size'));
+  return Number.isFinite(box) && box > 0 ? box : PRODUCT_LENS_BOX_PX;
+}
+
+function getProductLensTargetPx(img) {
+  const scope = img?.closest('.product-card-image') || document.documentElement;
+  const target = parseFloat(getComputedStyle(scope).getPropertyValue('--product-lens-display-size'));
   return Number.isFinite(target) && target > 0 ? target : PRODUCT_LENS_TARGET_PX;
 }
 
 function normalizeProductShotImage(img) {
   const run = () => {
-    const boxPx = img.getBoundingClientRect().width || PRODUCT_LENS_BOX_PX;
+    img.style.transform = '';
+    const boxPx = getProductLensBoxPx(img);
     if (!boxPx) return;
 
     const sample = 64;
@@ -194,10 +231,10 @@ function normalizeProductShotImage(img) {
 
     const contentFrac = Math.max(maxX - minX, maxY - minY) / sample;
     const displayedLens = contentFrac * boxPx;
-    const targetPx = getProductLensTargetPx();
+    const targetPx = getProductLensTargetPx(img);
     const scale = targetPx / displayedLens;
 
-    if (scale > 0.55 && scale < 2.4) {
+    if (scale > 0 && scale < 6) {
       img.style.transform = `scale(${scale})`;
       img.style.transformOrigin = 'center center';
     }
@@ -214,7 +251,7 @@ function normalizeProductShotImages(root = document) {
 function productCardMedia(product) {
   if (product.image) {
     const alt = `${product.brand} ${product.name}`;
-    return `<div class="product-image-wrap product-image-wrap--product"><img class="product-image product-image--product-shot" src="${encodeURI(product.image)}" alt="${alt}" loading="eager" decoding="async" /></div>`;
+    return `<div class="product-image-wrap product-image-wrap--product"><img class="product-image product-image--product-shot" src="${encodeURI(product.image)}" alt="${alt}" loading="lazy" decoding="async" /></div>`;
   }
   return `<div class="product-media-slot"><div class="product-lens" style="background: ${lensStyle(product.color)}"></div></div>`;
 }
@@ -282,6 +319,11 @@ function animateModalFromCard(modal, overlay, sourceEl) {
   const cardCy = cardRect.top + cardRect.height / 2;
   const modalCx = modalRect.left + modalRect.width / 2;
   const modalCy = modalRect.top + modalRect.height / 2;
+
+  if (!modalRect.width || !modalRect.height) {
+    overlay.style.opacity = '1';
+    return;
+  }
 
   const dx = cardCx - modalCx;
   const dy = cardCy - modalCy;
@@ -437,42 +479,93 @@ function initBrandDropdown(filters, onChange) {
   };
 }
 
+function buildColorFilterMarkup(options) {
+  const labels = options.map((color) => `
+    <button type="button" class="filter-btn" data-filter="color" data-value="${color}">${capitalize(color)}</button>
+  `).join('');
+
+  return `
+    <div class="filter-group" data-filter-group="color">
+      <h3>${FILTER_LABELS.color}</h3>
+      <div class="filter-options filter-options--color-labels">
+        <button class="filter-btn filter-btn--all active" data-filter="color" data-value="all">All</button>
+        ${labels}
+      </div>
+    </div>
+  `;
+}
+
 function buildFilterGroups() {
   const container = document.getElementById('filterGroups');
   if (!container) return;
 
-  const groups = [
-    { key: 'dia', options: FILTER_OPTIONS.dia },
-    { key: 'gdia', options: GDIA_RANGES, isGdia: true },
-    { key: 'color', options: FILTER_OPTIONS.color },
-    { key: 'special', options: [{ value: 'axis-lock', label: 'Axis-Lock' }], special: true },
-  ];
+  const diaGroup = renderFilterGroup({ key: 'dia', options: FILTER_OPTIONS.dia });
+  const gdiaGroup = renderFilterGroup({ key: 'gdia', options: GDIA_RANGES, isGdia: true });
+  const specialGroup = renderFilterGroup({
+    key: 'special',
+    options: [{ value: 'axis-lock', label: 'Axis-Lock' }],
+    special: true,
+  });
 
-  const otherGroups = groups.map((group) => {
-    const layout = FILTER_LAYOUT[group.key] || 'stack';
-    const buttons = group.options.map((option) => {
-      if (group.isGdia) {
-        return `<button class="filter-btn" data-filter="${group.key}" data-value="${option.value}">${option.label}</button>`;
-      }
+  container.innerHTML = buildBrandDropdownMarkup()
+    + diaGroup
+    + buildColorFilterMarkup(FILTER_OPTIONS.color)
+    + gdiaGroup
+    + specialGroup;
+}
 
-      const value = group.special ? option.value : String(option);
-      const label = group.special ? option.label : formatFilterLabel(value);
-      return `<button class="filter-btn" data-filter="${group.key}" data-value="${value}">${label}</button>`;
-    }).join('');
+function renderFilterGroup(group) {
+  const layout = FILTER_LAYOUT[group.key] || 'stack';
+  const buttons = group.options.map((option) => {
+    if (group.isGdia) {
+      return `<button class="filter-btn" data-filter="${group.key}" data-value="${option.value}">${option.label}</button>`;
+    }
 
-    const specialClass = group.special ? ' filter-group-special' : '';
-    return `
-      <div class="filter-group${specialClass}" data-filter-group="${group.key}">
-        <h3>${FILTER_LABELS[group.key]}</h3>
-        <div class="filter-options filter-options--${layout}">
-          <button class="filter-btn filter-btn--all active" data-filter="${group.key}" data-value="all">All</button>
-          ${buttons}
-        </div>
-      </div>
-    `;
+    const value = group.special ? option.value : String(option);
+    const label = group.special ? option.label : formatFilterLabel(value);
+    return `<button class="filter-btn" data-filter="${group.key}" data-value="${value}">${label}</button>`;
   }).join('');
 
-  container.innerHTML = buildBrandDropdownMarkup() + otherGroups;
+  const specialClass = group.special ? ' filter-group-special' : '';
+  return `
+    <div class="filter-group${specialClass}" data-filter-group="${group.key}">
+      <h3>${FILTER_LABELS[group.key]}</h3>
+      <div class="filter-options filter-options--${layout}">
+        <button class="filter-btn filter-btn--all active" data-filter="${group.key}" data-value="all">All</button>
+        ${buttons}
+      </div>
+    </div>
+  `;
+}
+
+function getShowcaseTitle(filters) {
+  if (filters.brand !== 'all') return filters.brand;
+  if (filters.color !== 'all') return `Showcase in ${capitalize(filters.color)}`;
+  return 'All Lenses';
+}
+
+function getShowcaseChips(filters) {
+  const chips = [];
+  if (filters.dia !== 'all') chips.push({ label: `DIA ${filters.dia}`, group: 'dia' });
+  if (filters.gdia !== 'all') {
+    const range = GDIA_RANGES.find((item) => item.value === filters.gdia);
+    chips.push({ label: `GDIA ${range?.label || filters.gdia}`, group: 'gdia' });
+  }
+  if (filters.special === 'axis-lock') chips.push({ label: 'Axis-Lock', group: 'special' });
+  return chips;
+}
+
+function updateShowcaseHeader(filters) {
+  const titleEl = document.getElementById('showcaseTitle');
+  const chipsEl = document.getElementById('showcaseChips');
+  if (!titleEl || !chipsEl) return;
+
+  titleEl.textContent = getShowcaseTitle(filters);
+  const chips = getShowcaseChips(filters);
+  chipsEl.innerHTML = chips.map((chip) => `
+    <button type="button" class="showcase-chip" data-chip-group="${chip.group}">${chip.label}</button>
+  `).join('');
+  chipsEl.classList.toggle('hidden', chips.length === 0);
 }
 
 const WAVE_LETTER_STAGGER = 0.14;
@@ -543,8 +636,6 @@ function initWelcomeWaveObserver() {
 function initShopPage() {
   preloadProductImages();
   updateCartCount();
-  initWelcomeLetterSplit();
-  initWelcomeWaveObserver();
 
   const filters = {
     brand: 'all',
@@ -554,7 +645,6 @@ function initShopPage() {
     special: 'all',
   };
   const grid = document.getElementById('productGrid');
-  const resultsCount = document.getElementById('resultsCount');
   const noResults = document.getElementById('noResults');
   const overlay = document.getElementById('modalOverlay');
   const modalClose = document.getElementById('modalClose');
@@ -571,33 +661,32 @@ function initShopPage() {
     });
   }
 
-  function productCardMeta(product) {
-    const sizingLine = `DIA ${product.dia} · GDIA ${product.gdia}`;
-    const detailParts = [capitalize(product.color)];
-    if (product.axisLock) detailParts.push('Axis-Lock');
-    const detailLine = detailParts.join(' · ');
-
-    return `
-      <span class="product-meta-line">${sizingLine}</span>
-      <span class="product-meta-line">${detailLine}</span>
-    `;
-  }
-
   function renderProducts() {
     const filtered = getFilteredProducts();
-    resultsCount.textContent = `${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
     noResults.classList.toggle('hidden', filtered.length > 0);
+    updateShowcaseHeader(filters);
 
-    grid.innerHTML = filtered.map((p) => `
+    grid.innerHTML = filtered.map((p) => {
+      const title = formatProductCardTitle(p.name);
+      return `
       <article class="product-card" data-id="${p.id}">
-        ${productCardMedia(p)}
-        <p class="product-brand">${p.brand}</p>
-        <h3>${p.name}</h3>
-        <div class="product-meta">${productCardMeta(p)}</div>
-        <p class="product-price">${formatPrice(p.price)}</p>
-        ${isSoldOut(p.id) ? '<p class="product-sold-out">Sold out</p>' : ''}
+        ${isSoldOut(p.id) ? '<span class="product-card-sold-out-badge">sold out</span>' : ''}
+        <div class="product-card-image">
+          ${productCardMedia(p)}
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-row">
+            <p class="product-card-brand">${p.brand}</p>
+            <span class="product-price">${formatPrice(p.price)}</span>
+          </div>
+          <div class="product-card-title-wrap">
+            <h3 class="${title.className}">${title.html}</h3>
+          </div>
+          <p class="product-card-sub">1-Day · DIA ${p.dia} · GDIA ${p.gdia}</p>
+        </div>
       </article>
-    `).join('');
+    `;
+    }).join('');
 
     grid.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('click', () => {
@@ -607,12 +696,12 @@ function initShopPage() {
     });
 
     normalizeProductShotImages(grid);
+    requestAnimationFrame(() => normalizeProductShotImages(grid));
   }
 
   buildFilterGroups();
   const brandDropdown = initBrandDropdown(filters, () => {
     renderProducts();
-    playWelcomeWave();
   });
 
   document.getElementById('resetFilters')?.addEventListener('click', () => {
@@ -629,7 +718,37 @@ function initShopPage() {
     });
 
     renderProducts();
-    playWelcomeWave();
+  });
+
+  function setFiltersOpen(open) {
+    document.getElementById('filtersPanel')?.classList.toggle('is-open', open);
+    document.getElementById('filtersBackdrop')?.classList.toggle('hidden', !open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  document.getElementById('filtersClose')?.addEventListener('click', () => {
+    setFiltersOpen(false);
+  });
+
+  document.getElementById('filtersOpen')?.addEventListener('click', () => {
+    setFiltersOpen(true);
+  });
+
+  document.getElementById('filtersBackdrop')?.addEventListener('click', () => {
+    setFiltersOpen(false);
+  });
+
+  document.getElementById('showcaseChips')?.addEventListener('click', (event) => {
+    const chip = event.target.closest('.showcase-chip');
+    if (!chip) return;
+    const group = chip.dataset.chipGroup;
+    filters[group] = 'all';
+    document.querySelectorAll(`[data-filter="${group}"]`).forEach((btn) => {
+      if (btn.classList.contains('filter-btn')) {
+        btn.classList.toggle('active', btn.dataset.value === 'all');
+      }
+    });
+    renderProducts();
   });
 
   document.querySelectorAll('.filter-btn').forEach((btn) => {
@@ -638,12 +757,13 @@ function initShopPage() {
       const value = btn.dataset.value;
 
       document.querySelectorAll(`[data-filter="${group}"]`).forEach((b) => {
-        b.classList.toggle('active', b === btn);
+        if (b.classList.contains('filter-btn')) {
+          b.classList.toggle('active', b === btn);
+        }
       });
 
       filters[group] = value;
       renderProducts();
-      playWelcomeWave();
     });
   });
 
@@ -652,11 +772,7 @@ function initShopPage() {
     setModalMedia(product);
     document.getElementById('modalBrand').textContent = product.brand;
     document.getElementById('modalTitle').textContent = product.name;
-    const specRows = [
-      ['1-Day Wear', '0.00 Rx'],
-      [`DIA ${formatSpecValue(product.dia)}`, `GDIA ${formatSpecValue(product.gdia)}`, capitalize(product.color)],
-    ];
-    if (product.axisLock) specRows.push(['Axis-Lock']);
+    const specRows = buildModalSpecRows(product);
 
     document.getElementById('modalSpecs').innerHTML = specRows
       .map((pills) => `
@@ -669,46 +785,93 @@ function initShopPage() {
 
     const soldOut = isSoldOut(product.id);
     const addBtn = document.getElementById('modalAddToCart');
-    const waitlistForm = document.getElementById('waitlistForm');
-    addBtn.textContent = soldOut ? 'Sold out' : 'Add to Cart';
+    const joinWaitlistBtn = document.getElementById('modalJoinWaitlist');
+    const soldOutBadge = document.getElementById('modalSoldOutBadge');
+    addBtn.textContent = 'Add to Cart';
     addBtn.disabled = soldOut;
     addBtn.classList.toggle('hidden', soldOut);
-    waitlistForm?.classList.toggle('hidden', !soldOut);
-    document.getElementById('waitlistError')?.classList.add('hidden');
-    document.getElementById('waitlistSuccess')?.classList.add('hidden');
-    const igInput = document.getElementById('waitlistInstagram');
-    const phoneInput = document.getElementById('waitlistPhone');
-    if (igInput) igInput.value = '';
-    if (phoneInput) phoneInput.value = '';
+    joinWaitlistBtn?.classList.toggle('hidden', !soldOut);
+    soldOutBadge?.classList.toggle('hidden', !soldOut);
+    closeWaitlistModal();
 
     const modal = overlay.querySelector('.modal');
     resetModalAnimation(modal, overlay);
+    modal?.classList.toggle('modal--sold-out', soldOut);
 
     overlay.classList.remove('hidden');
     overlay.classList.remove('is-opening');
     document.body.style.overflow = 'hidden';
 
-    const sourceEl = cardEl?.querySelector('.product-image-wrap, .product-media-slot, .product-lens');
+    const sourceEl = cardEl?.querySelector('.product-card-image, .product-image-wrap, .product-media-slot, .product-lens');
 
-    if (modal && sourceEl) {
-      animateModalFromCard(modal, overlay, sourceEl);
-    } else if (modal) {
-      overlay.classList.add('is-opening');
-      modal.classList.remove('is-flipping-in');
-      void modal.offsetWidth;
-      modal.classList.add('is-flipping-in');
-      overlay.style.opacity = '1';
-    }
+    const openWithAnimation = () => {
+      if (modal && sourceEl && !soldOut) {
+        animateModalFromCard(modal, overlay, sourceEl);
+        return;
+      }
+
+      if (modal) {
+        overlay.classList.add('is-opening');
+        modal.classList.remove('is-flipping-in');
+        void modal.offsetWidth;
+        modal.classList.add('is-flipping-in');
+        overlay.style.opacity = '1';
+      }
+    };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(openWithAnimation);
+    });
   }
 
   function closeModal() {
     const modal = overlay.querySelector('.modal');
     resetModalAnimation(modal, overlay);
+    closeWaitlistModal();
     overlay.classList.add('hidden');
     overlay.classList.remove('is-opening');
     document.body.style.overflow = '';
-    modal?.classList.remove('has-media');
+    modal?.classList.remove('has-media', 'modal--sold-out');
+    document.getElementById('modalSoldOutBadge')?.classList.add('hidden');
     activeProduct = null;
+  }
+
+  const waitlistOverlay = document.getElementById('waitlistOverlay');
+  const waitlistInstagram = document.getElementById('waitlistInstagram');
+  const waitlistPhone = document.getElementById('waitlistPhone');
+  const waitlistNoInstagram = document.getElementById('waitlistNoInstagram');
+  let waitlistUsesPhone = false;
+
+  function resetWaitlistForm() {
+    waitlistUsesPhone = false;
+    waitlistInstagram?.classList.remove('hidden');
+    waitlistPhone?.classList.add('hidden');
+    if (waitlistInstagram) waitlistInstagram.value = '';
+    if (waitlistPhone) waitlistPhone.value = '';
+    if (waitlistNoInstagram) waitlistNoInstagram.textContent = "I don't have instagram";
+    document.getElementById('waitlistError')?.classList.add('hidden');
+    document.getElementById('waitlistSuccess')?.classList.add('hidden');
+  }
+
+  function openWaitlistModal() {
+    resetWaitlistForm();
+    waitlistOverlay?.classList.remove('hidden');
+  }
+
+  function closeWaitlistModal() {
+    waitlistOverlay?.classList.add('hidden');
+    resetWaitlistForm();
+  }
+
+  function setWaitlistContactMode(usePhone) {
+    waitlistUsesPhone = usePhone;
+    waitlistInstagram?.classList.toggle('hidden', usePhone);
+    waitlistPhone?.classList.toggle('hidden', !usePhone);
+    if (waitlistNoInstagram) {
+      waitlistNoInstagram.textContent = usePhone ? 'Use Instagram instead' : "I don't have instagram";
+    }
+    document.getElementById('waitlistError')?.classList.add('hidden');
+    (usePhone ? waitlistPhone : waitlistInstagram)?.focus();
   }
 
   modalClose.addEventListener('click', closeModal);
@@ -723,17 +886,32 @@ function initShopPage() {
     }
   });
 
+  document.getElementById('modalJoinWaitlist')?.addEventListener('click', () => {
+    openWaitlistModal();
+  });
+
+  document.getElementById('waitlistClose')?.addEventListener('click', closeWaitlistModal);
+  waitlistOverlay?.addEventListener('click', (e) => {
+    if (e.target === waitlistOverlay) closeWaitlistModal();
+  });
+
+  waitlistNoInstagram?.addEventListener('click', () => {
+    setWaitlistContactMode(!waitlistUsesPhone);
+  });
+
   document.getElementById('waitlistSubmit')?.addEventListener('click', async () => {
     if (!activeProduct) return;
     const errorEl = document.getElementById('waitlistError');
     const successEl = document.getElementById('waitlistSuccess');
-    const instagram = document.getElementById('waitlistInstagram').value.trim();
-    const phone = document.getElementById('waitlistPhone').value.trim();
+    const instagram = waitlistUsesPhone ? '' : waitlistInstagram?.value.trim() || '';
+    const phone = waitlistUsesPhone ? waitlistPhone?.value.trim() || '' : '';
     errorEl.classList.add('hidden');
     successEl.classList.add('hidden');
 
     if (!instagram && !phone) {
-      errorEl.textContent = 'Enter an Instagram username or a phone number.';
+      errorEl.textContent = waitlistUsesPhone
+        ? 'Enter a phone number.'
+        : 'Enter an Instagram username.';
       errorEl.classList.remove('hidden');
       return;
     }
@@ -752,7 +930,12 @@ function initShopPage() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+    if (e.key !== 'Escape') return;
+    if (!waitlistOverlay?.classList.contains('hidden')) {
+      closeWaitlistModal();
+      return;
+    }
+    if (!overlay.classList.contains('hidden')) {
       closeModal();
     }
   });

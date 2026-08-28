@@ -12,13 +12,14 @@
 <body>
   <header class="header">
     <nav class="nav">
+      <div class="nav-left">
+        <a href="index.html" class="nav-link is-active">Shop</a>
+      </div>
       <a href="index.html" class="logo">mye</a>
       <a href="cart.html" class="cart-btn" aria-label="View cart">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-          <path d="M6 6h15l-1.5 9h-12z"/>
-          <path d="M6 6L5 3H2"/>
-          <circle cx="9" cy="20" r="1"/>
-          <circle cx="18" cy="20" r="1"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="5.25" y="9" width="13.5" height="11.5" rx="2"/>
+          <path d="M9 9V7.5a3 3 0 1 1 6 0V9"/>
         </svg>
         <span class="cart-count" id="cartCount">0</span>
       </a>
@@ -26,38 +27,35 @@
   </header>
 
   <main>
-    <section class="welcome">
-      <div class="container">
-        <p class="welcome-eyebrow">Curated contact lenses</p>
-        <h1 class="logo-hero">mye</h1>
-        <p class="welcome-desc">
-          Discover natural tones and colors from brands we love—soft, breathable lenses for everyday wear.
-        </p>
-        <p class="welcome-note">Available in <span class="welcome-highlight">1-day wear</span> with a <span class="welcome-highlight">0.00 prescription</span> only.</p>
-      </div>
-    </section>
-
     <section class="shop">
-      <div class="container">
-        <aside class="filters">
-          <div class="filters-header">
-            <h2>Filter</h2>
-            <button type="button" class="filter-reset-btn" id="resetFilters">Reset filters</button>
-          </div>
-          <div id="filterGroups"></div>
-        </aside>
-
-        <div class="products-area">
-          <p class="results-count" id="resultsCount"></p>
-          <div class="product-grid" id="productGrid"></div>
-          <p class="no-results hidden" id="noResults">No products match your filters.</p>
+      <div class="filters-backdrop hidden" id="filtersBackdrop"></div>
+      <aside class="filters" id="filtersPanel">
+        <div class="filters-mobile-header">
+          <h2 class="filters-mobile-title">Filters</h2>
+          <button type="button" class="filters-hide-btn" id="filtersClose" aria-label="Hide filters">&times;</button>
         </div>
+        <button type="button" class="filter-reset-btn" id="resetFilters">Reset filters</button>
+        <div id="filterGroups"></div>
+      </aside>
+
+      <div class="products-area">
+        <div class="products-toolbar">
+          <button type="button" class="filters-open-btn" id="filtersOpen">Filters</button>
+        </div>
+
+        <div class="showcase-header">
+          <h2 class="showcase-title" id="showcaseTitle">All Lenses</h2>
+          <div class="showcase-chips" id="showcaseChips"></div>
+        </div>
+
+        <div class="product-grid" id="productGrid"></div>
+        <p class="no-results hidden" id="noResults">No products match your filters.</p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
+    <div class="footer-inner">
       <span class="logo">mye</span>
       <p>&copy; 2026 MYE. All rights reserved.</p>
     </div>
@@ -73,18 +71,26 @@
         <ul class="modal-specs" id="modalSpecs"></ul>
         <p class="modal-desc" id="modalDesc"></p>
         <p class="modal-price" id="modalPrice"></p>
+        <span class="modal-sold-out-badge hidden" id="modalSoldOutBadge">sold out</span>
         <div class="modal-actions" id="modalActions">
           <button class="btn btn-primary" id="modalAddToCart">Add to Cart</button>
-        </div>
-        <div class="waitlist-form hidden" id="waitlistForm">
-          <p class="waitlist-copy">Join the waitlist. Instagram is preferred; use a phone number if you do not have one.</p>
-          <input class="form-input" type="text" id="waitlistInstagram" placeholder="@your instagram username" autocomplete="off" autocapitalize="none">
-          <input class="form-input" type="tel" id="waitlistPhone" placeholder="Phone number (if no Instagram)" autocomplete="tel">
-          <p class="form-error hidden" id="waitlistError"></p>
-          <p class="waitlist-success hidden" id="waitlistSuccess">You're on the waitlist.</p>
-          <button class="btn btn-primary btn-full" type="button" id="waitlistSubmit">Join waitlist</button>
+          <button class="btn btn-primary hidden" id="modalJoinWaitlist" type="button">Join the waitlist</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="waitlist-overlay hidden" id="waitlistOverlay">
+    <div class="waitlist-modal" role="dialog" aria-modal="true" aria-labelledby="waitlistModalTitle">
+      <button class="waitlist-modal-close" id="waitlistClose" type="button" aria-label="Close">&times;</button>
+      <h3 class="waitlist-modal-title" id="waitlistModalTitle">Join the waitlist</h3>
+      <p class="waitlist-copy">We'll contact you when this product is back in stock.</p>
+      <input class="form-input" type="text" id="waitlistInstagram" placeholder="@your instagram username" autocomplete="off" autocapitalize="none">
+      <input class="form-input hidden" type="tel" id="waitlistPhone" placeholder="Phone number" autocomplete="tel">
+      <button class="waitlist-no-ig" type="button" id="waitlistNoInstagram">I don't have instagram</button>
+      <p class="form-error hidden" id="waitlistError"></p>
+      <p class="waitlist-success hidden" id="waitlistSuccess">You're on the waitlist.</p>
+      <button class="btn btn-primary btn-full" type="button" id="waitlistSubmit">Join waitlist</button>
     </div>
   </div>
 
