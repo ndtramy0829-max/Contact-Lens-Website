@@ -1,4 +1,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  flushOutbox,
+  flushOutboxByOrderNumber,
+  graphGet,
+  normalizeInstagram,
+  parseOrderRef,
+  verifyWebhookSignature,
+} from "../_shared/instagram.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,62 +28,17 @@ function db() {
   );
 }
 
-function normalizeInstagram(handle: string | null) {
-  if (!handle) return null;
-  const value = handle.trim().replace(/^@+/, "").toLowerCase();
-  return value || null;
-}
+function extractOrderNumber(event: Record<string, unknown>) {
+  const message = event.message as Record<string, unknown> | undefined;
+  const referral = (event.referral ?? message?.referral) as
+    | Record<string, unknown>
+    | undefined;
+  const fromRef = parseOrderRef(referral?.ref as string | undefined);
+  if (fromRef) return fromRef;
 
-async function graphGet(path: string) {
-  const token = Deno.env.get("INSTAGRAM_ACCESS_TOKEN") ?? "";
-  const url = `https://graph.facebook.com/v21.0/${path}${path.includes("?") ? "&" : "?"}access_token=${token}`;
-  const res = await fetch(url);
-  return await res.json();
-}
-
-async function sendInstagram(igsid: string, text: string) {
-  const token = Deno.env.get("INSTAGRAM_ACCESS_TOKEN") ?? "";
-  const igUserId = Deno.env.get("INSTAGRAM_IG_USER_ID") ?? "me";
-  const res = await fetch(`https://graph.facebook.com/v21.0/${igUserId}/messages`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      recipient: { id: igsid },
-      message: { text },
-      access_token: token,
-    }),
-  });
-  return await res.json();
-}
-
-async function flushOutbox(supabase: ReturnType<typeof db>, username: string | null, igsid: string) {
-  const handle = normalizeInstagram(username);
-  let query = supabase
-    .from("instagram_outbox")
-    .select("*")
-    .in("status", ["pending", "needs_customer_message"]);
-  if (handle) query = query.eq("instagram_username", handle);
-  else query = query.eq("igsid", igsid);
-  const { data: rows } = await query;
-  for (const row of rows ?? []) {
-    const result = await sendInstagram(igsid, row.body);
-    if (result.error) {
-      await supabase
-        .from("instagram_outbox")
-        .update({ status: "failed", last_error: result.error.message })
-        .eq("id", row.id);
-    } else {
-      await supabase
-        .from("instagram_outbox")
-        .update({
-          status: "sent",
-          sent_at: new Date().toISOString(),
-          igsid,
-          last_error: null,
-        })
-        .eq("id", row.id);
-    }
-  }
+  const text = typeof message?.text === "string" ? message.text : "";
+  const fromText = text.match(/\bOrder\s+([MY]\d{4})\s+is\s+placed\b/i);
+  return fromText?.[1]?.toUpperCase() ?? null;
 }
 
 Deno.serve(async (req) => {
@@ -96,9 +59,15 @@ Deno.serve(async (req) => {
 
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const payload = await req.json().catch(() => ({}));
+  const rawBody = await req.text();
+  if (!(await verifyWebhookSignature(req, rawBody))) {
+    return json({ error: "Invalid signature" }, 403);
+  }
+
+  const payload = JSON.parse(rawBody || "{}");
   const supabase = db();
   const entries = payload.entry ?? [];
+  let flushed = 0;
 
   for (const entry of entries) {
     const messaging = entry.messaging ?? [];
@@ -119,9 +88,16 @@ Deno.serve(async (req) => {
         { onConflict: "igsid" },
       );
 
-      await flushOutbox(supabase, username, igsid);
+      const orderNumber = extractOrderNumber(event);
+      if (orderNumber) {
+        const byOrder = await flushOutboxByOrderNumber(supabase, orderNumber, igsid);
+        flushed += byOrder.sent;
+      }
+
+      const result = await flushOutbox(supabase, username, igsid);
+      flushed += result.sent;
     }
   }
 
-  return json({ ok: true });
+  return json({ ok: true, flushed });
 });

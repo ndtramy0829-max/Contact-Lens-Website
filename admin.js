@@ -4,6 +4,7 @@ const SEARCH_PLACEHOLDERS = {
   inventory: 'Search products...',
   orders: 'Search orders...',
   waitlist: 'Search waitlist...',
+  messages: 'Search messages...',
 };
 
 let currentTab = 'inventory';
@@ -138,6 +139,49 @@ function renderOrders(orders) {
   `;
 }
 
+function renderMessages(messages) {
+  if (!messages.length) {
+    return '<p class="admin-intro">No Instagram messages queued yet. Order confirmations appear here after checkout.</p>';
+  }
+
+  return `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>To</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${messages.map((m) => {
+            const contact = m.instagram_username ? `@${m.instagram_username}` : '—';
+            const search = `${contact} ${m.kind} ${m.status} ${m.last_error || ''}`;
+            const canRetry = m.status === 'failed' || m.status === 'needs_customer_message';
+            return `
+            <tr data-search="${escapeHtml(search)}">
+              <td>${escapeHtml(contact)}</td>
+              <td>${escapeHtml(m.kind.replace('_', ' '))}</td>
+              <td>
+                <span class="admin-status ${escapeHtml(m.status)}">${escapeHtml(m.status)}</span>
+                ${m.last_error ? `<br><small>${escapeHtml(m.last_error)}</small>` : ''}
+              </td>
+              <td>${escapeHtml(new Date(m.created_at).toLocaleString())}</td>
+              <td class="admin-actions">
+                ${canRetry ? `<button class="btn btn-outline" type="button" data-retry-message="${m.id}">Retry</button>` : ''}
+              </td>
+            </tr>
+          `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderWaitlist(entries) {
   return `
     <div class="admin-table-wrap">
@@ -186,6 +230,9 @@ async function loadTab(tab) {
     } else if (tab === 'orders') {
       const { orders } = await adminRequest('list-orders');
       panel.innerHTML = renderOrders(orders);
+    } else if (tab === 'messages') {
+      const { messages } = await adminRequest('list-instagram-outbox');
+      panel.innerHTML = renderMessages(messages);
     } else {
       const { waitlist } = await adminRequest('list-waitlist');
       panel.innerHTML = renderWaitlist(waitlist);
@@ -242,6 +289,7 @@ document.getElementById('adminPanel').addEventListener('click', async (event) =>
   const notifyId = event.target.closest('[data-notify]')?.dataset.notify;
   const completeId = event.target.closest('[data-complete]')?.dataset.complete;
   const cancelId = event.target.closest('[data-cancel]')?.dataset.cancel;
+  const retryId = event.target.closest('[data-retry-message]')?.dataset.retryMessage;
 
   if (editBtn) {
     const row = editBtn.closest('tr');
@@ -273,6 +321,15 @@ document.getElementById('adminPanel').addEventListener('click', async (event) =>
     if (cancelId) {
       await adminRequest('cancel-order', { orderId: Number(cancelId) });
       await loadTab('orders');
+    }
+    if (retryId) {
+      const result = await adminRequest('retry-instagram-message', { outboxId: Number(retryId) });
+      if (result.needsCustomerMessage) {
+        showError(result.message || 'Customer has not messaged @mye.lenses yet.');
+      } else {
+        showError('');
+      }
+      await loadTab('messages');
     }
   } catch (err) {
     showError(err.message);

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { lookupIgsidByUsername, sendOutboxRow, tryFlushByUsername } from "../_shared/instagram.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -155,22 +156,61 @@ Deno.serve(async (req) => {
         .eq("status", "waiting");
       if (error) throw error;
 
+      let sent = 0;
       for (const entry of entries ?? []) {
         if (entry.instagram_username) {
           await supabase.from("instagram_outbox").insert({
             kind: "waitlist_restock",
             waitlist_id: entry.id,
             instagram_username: entry.instagram_username,
-            body: `${product?.name ?? "A lens"} is back in stock at MYE. Message @mye.lenses.shop to claim it.`,
+            body: `${product?.name ?? "A lens"} is back in stock at MYE! Reply here to claim yours.`,
             status: "needs_customer_message",
           });
+          const flush = await tryFlushByUsername(supabase, entry.instagram_username);
+          sent += flush.sent;
         }
         await supabase
           .from("waitlist")
           .update({ status: "notified", notified_at: new Date().toISOString() })
           .eq("id", entry.id);
       }
-      return json({ notified: (entries ?? []).length, inStock: product?.available_pairs ?? 0 });
+      return json({
+        notified: (entries ?? []).length,
+        sent,
+        inStock: product?.available_pairs ?? 0,
+      });
+    }
+
+    if (action === "list-instagram-outbox") {
+      const { data, error } = await supabase
+        .from("instagram_outbox")
+        .select("id, kind, order_id, waitlist_id, instagram_username, status, last_error, created_at, sent_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return json({ messages: data ?? [] });
+    }
+
+    if (action === "retry-instagram-message") {
+      const outboxId = Number(body.outboxId);
+      const { data: row, error } = await supabase
+        .from("instagram_outbox")
+        .select("*")
+        .eq("id", outboxId)
+        .single();
+      if (error || !row) throw new Error("Message not found");
+
+      const igsid = row.igsid ?? await lookupIgsidByUsername(supabase, row.instagram_username);
+      if (!igsid) {
+        return json({
+          ok: false,
+          needsCustomerMessage: true,
+          message: "Customer has not messaged @mye.lenses yet.",
+        });
+      }
+
+      const result = await sendOutboxRow(supabase, row, igsid);
+      return json({ ok: true, ...result });
     }
 
     return json({ error: "Unknown action" }, 400);

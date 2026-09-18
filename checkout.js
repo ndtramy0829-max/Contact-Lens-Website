@@ -1,11 +1,7 @@
 // ─── Checkout page logic ─────────────────────────────────────────────────────
 //
-// Facebook Page username — replace MY_FACEBOOK_PAGE_USERNAME below with your
-// actual Facebook Business Page username (the part after facebook.com/ in your
-// page URL). Example: if your page is facebook.com/myelensesshop, use
-// 'myelensesshop'.
-//
-const FB_PAGE_USERNAME = 'MY_FACEBOOK_PAGE_USERNAME';
+// Facebook Page ID from facebook.com/people/Myelenses/61593976143698
+const FB_PAGE_USERNAME = '61593976143698';
 
 const SHIPPING_FEE = 5.0;
 
@@ -116,37 +112,86 @@ function renderReceiptCard(cartItems, delivery, address, orderNum) {
   `;
 }
 
-function renderConfirmation(contactMethod, orderNum, instagramHandle) {
+const IG_SHOP_USERNAME = 'mye.lenses';
+
+function orderConfirmMessage(orderNum) {
+  return `Order ${orderNum} is placed`;
+}
+
+function renderConfirmation(contactMethod, orderNum) {
+  const confirmText = orderConfirmMessage(orderNum);
+
   if (contactMethod === 'instagram') {
+    const igUrl = `https://ig.me/m/${IG_SHOP_USERNAME}?ref=ORDER_${orderNum}`;
     return `
       <div class="confirmation-heart">♡</div>
       <h2 class="confirmation-title">Thank you for placing<br>an order with us!</h2>
+      <div class="confirmation-order-num">${orderNum}</div>
       <p class="confirmation-subtitle">
-        Message <strong>@mye.lenses.shop</strong> from your Instagram account<br>
-        so we can send your order confirmation (${orderNum}).
+        Send this message to <strong>@${IG_SHOP_USERNAME}</strong> from your Instagram account<br>
+        so we can confirm your order.
       </p>
-      <a href="index.html" class="btn btn-outline">Continue Shopping</a>
+      <div class="confirmation-message-box">
+        <p class="confirmation-message-text" id="confirmMessageText">${confirmText}</p>
+        <button type="button" class="btn btn-outline confirmation-copy-btn" id="copyConfirmMessage">
+          Copy message
+        </button>
+      </div>
+      <a href="${igUrl}" target="_blank" rel="noopener" class="confirmation-messenger-btn confirmation-ig-btn">
+        Open Instagram chat
+      </a>
+      <p class="confirmation-hint">Paste the message, then tap Send.</p>
+      <br>
+      <a href="index.html" class="btn btn-outline" style="margin-top:8px;">Continue Shopping</a>
     `;
   }
 
-  // Facebook Messenger
-  // To add the order number to the ref param later, change the URL to:
-  // `https://m.me/${FB_PAGE_USERNAME}?ref=ORDER_${orderNum}`
-  const messengerUrl = `https://m.me/${FB_PAGE_USERNAME}`;
+  const messengerUrl = `https://m.me/${FB_PAGE_USERNAME}?ref=ORDER_${orderNum}`;
 
   return `
     <div class="confirmation-heart">♡</div>
     <h2 class="confirmation-title">Thank you for placing<br>an order with us!</h2>
     <div class="confirmation-order-num">${orderNum}</div>
     <p class="confirmation-subtitle">
-      Message us on Facebook Messenger to confirm<br>your order details.
+      Send this message on Facebook Messenger to confirm your order.
     </p>
+    <div class="confirmation-message-box">
+      <p class="confirmation-message-text" id="confirmMessageText">${confirmText}</p>
+      <button type="button" class="btn btn-outline confirmation-copy-btn" id="copyConfirmMessage">
+        Copy message
+      </button>
+    </div>
     <a href="${messengerUrl}" target="_blank" rel="noopener" class="confirmation-messenger-btn">
-      Message us here
+      Open Messenger
     </a>
+    <p class="confirmation-hint">Paste the message, then tap Send.</p>
     <br>
     <a href="index.html" class="btn btn-outline" style="margin-top:8px;">Continue Shopping</a>
   `;
+}
+
+function wireConfirmationActions() {
+  const copyBtn = document.getElementById('copyConfirmMessage');
+  const textEl = document.getElementById('confirmMessageText');
+  if (!copyBtn || !textEl) return;
+
+  copyBtn.addEventListener('click', async () => {
+    const text = textEl.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy message';
+      }, 1600);
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(textEl);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      copyBtn.textContent = 'Select & copy';
+    }
+  });
 }
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -271,7 +316,6 @@ function initCheckoutPage() {
   function refreshContactFields() {
     const contact = currentContact();
     const contactOptions = document.getElementById('contactOptions');
-    document.getElementById('instagramField').classList.toggle('hidden', contact !== 'instagram');
     document.getElementById('messengerNote').classList.toggle('hidden', contact !== 'messenger');
     contactOptions?.classList.toggle('instagram-selected', contact === 'instagram');
     contactOptions?.classList.toggle('messenger-selected', contact === 'messenger');
@@ -280,43 +324,8 @@ function initCheckoutPage() {
   refreshContactFields();
 
   document.querySelectorAll('input[name="contact"]').forEach((radio) => {
-    radio.addEventListener('change', () => {
-      refreshContactFields();
-      moveInstagramFieldForMobile();
-    });
+    radio.addEventListener('change', refreshContactFields);
   });
-
-  // On mobile, move the Instagram username field directly under the
-  // Instagram option card (instead of after both option cards).
-  const instagramField = document.getElementById('instagramField');
-  const instagramDefaultParent = instagramField?.parentNode;
-  const instagramDefaultNextSibling = instagramField?.nextSibling;
-
-  function isMobileLayout() {
-    return window.matchMedia('(max-width: 768px)').matches;
-  }
-
-  function moveInstagramFieldForMobile() {
-    if (!instagramField || !instagramDefaultParent) return;
-
-    const mobile = isMobileLayout();
-    if (mobile) {
-      const instagramOptionInput = document.getElementById('contactInstagram');
-      const instagramOptionLabel = instagramOptionInput?.closest('label.contact-option');
-      if (instagramOptionLabel) instagramOptionLabel.insertAdjacentElement('afterend', instagramField);
-      return;
-    }
-
-    // Restore the original position for desktop.
-    if (instagramDefaultNextSibling && instagramDefaultNextSibling.parentNode === instagramDefaultParent) {
-      instagramDefaultParent.insertBefore(instagramField, instagramDefaultNextSibling);
-    } else {
-      instagramDefaultParent.appendChild(instagramField);
-    }
-  }
-
-  moveInstagramFieldForMobile();
-  window.addEventListener('resize', moveInstagramFieldForMobile);
 
   document.getElementById('submitOrderBtn').addEventListener('click', async () => {
     const contact = currentContact();
@@ -324,24 +333,7 @@ function initCheckoutPage() {
     const submitErr = document.getElementById('submitOrderError');
     submitErr?.classList.add('hidden');
 
-    if (contact === 'instagram') {
-      const handle = document.getElementById('instagramHandle').value.trim();
-      const errEl  = document.getElementById('errInstagram');
-      const input  = document.getElementById('instagramHandle');
-
-      if (!handle) {
-        input.classList.add('is-invalid');
-        errEl.classList.remove('hidden');
-        input.focus();
-        return;
-      }
-
-      input.classList.remove('is-invalid');
-      errEl.classList.add('hidden');
-    }
-
     const delivery = currentDelivery();
-    const instagramHandle = document.getElementById('instagramHandle').value.trim();
     submitBtn.disabled = true;
     submitBtn.textContent = 'Placing order...';
 
@@ -349,14 +341,15 @@ function initCheckoutPage() {
       const result = await callShopFunction('place-order', {
         delivery,
         contactMethod: contact,
-        instagram: contact === 'instagram' ? instagramHandle : null,
+        instagram: null,
         shipping: delivery === 'shipping' ? getShippingAddress() : null,
         items: cartItems.map((item) => ({ id: item.product.id, quantity: item.quantity })),
       });
 
       orderNum = result.orderNumber;
       document.getElementById('confirmationScreen').innerHTML =
-        renderConfirmation(contact, orderNum, instagramHandle);
+        renderConfirmation(contact, orderNum);
+      wireConfirmationActions();
 
       saveCart([]);
       updateCartCount();

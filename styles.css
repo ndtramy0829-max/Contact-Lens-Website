@@ -7,17 +7,17 @@
 }
 
 :root {
-  --buttermilk: #C1DBE8;
-  --pastel-blue: #FFF1B5;
+  --buttermilk: #FFF1B5;
+  --pastel-blue: #C1DBE8;
   --old-burgundy: #43302E;
   --old-burgundy-dark: #352624;
   --card-beige: #F2F0ED;
   --sidebar-bg: #F9F9F9;
-  --opal: var(--buttermilk);
-  --columbia-blue: var(--buttermilk);
+  --opal: var(--pastel-blue);
+  --columbia-blue: var(--pastel-blue);
   --ming: var(--old-burgundy);
-  --palm-leaf: var(--buttermilk);
-  --anti-flash: var(--pastel-blue);
+  --palm-leaf: var(--pastel-blue);
+  --anti-flash: var(--buttermilk);
   --surface: #fff;
   --product-lens-size: 106px;
   --product-lens-display-size: 91px;
@@ -43,7 +43,7 @@ html {
 
 body {
   font-family: var(--font-body);
-  background: var(--pastel-blue);
+  background: var(--buttermilk);
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
@@ -75,7 +75,7 @@ main {
   z-index: 100;
   padding: 0 24px;
   height: var(--header-height);
-  background: var(--buttermilk);
+  background: var(--pastel-blue);
   border-bottom: 1px solid rgba(67, 48, 46, 0.08);
 }
 
@@ -419,15 +419,15 @@ main {
 }
 
 .filter-btn.active {
-  background: var(--buttermilk);
-  border-color: var(--buttermilk);
+  background: var(--pastel-blue);
+  border-color: var(--pastel-blue);
   color: var(--old-burgundy);
   font-weight: 600;
 }
 
 .filter-group-special .filter-btn[data-value="axis-lock"].active {
-  background: var(--buttermilk);
-  border-color: var(--buttermilk);
+  background: var(--pastel-blue);
+  border-color: var(--pastel-blue);
   color: var(--old-burgundy);
 }
 
@@ -492,7 +492,7 @@ main {
   border: none;
   border-radius: 4px;
   padding: 6px 10px;
-  background: var(--buttermilk);
+  background: var(--pastel-blue);
   color: var(--old-burgundy);
   font-family: var(--font-body);
   font-size: 0.68rem;
@@ -551,8 +551,8 @@ main {
 
 .brand-dropdown.is-open .brand-dropdown-trigger,
 .brand-dropdown-trigger.has-selection {
-  background: var(--buttermilk);
-  border-color: var(--buttermilk);
+  background: var(--pastel-blue);
+  border-color: var(--pastel-blue);
   color: var(--old-burgundy);
   font-weight: 600;
 }
@@ -745,7 +745,7 @@ main {
   flex-direction: column;
   gap: 2px;
   padding: var(--product-card-body-pad-top) 12px var(--product-card-body-pad-bottom);
-  background: var(--pastel-blue);
+  background: var(--buttermilk);
   box-sizing: border-box;
   height: calc(
     var(--product-card-body-pad-top) + var(--product-card-body-pad-bottom)
@@ -1225,7 +1225,7 @@ main {
   border-radius: 0;
   background: none;
   font-size: 0.78rem;
-  color: var(--buttermilk);
+  color: var(--pastel-blue);
   font-weight: 500;
   line-height: 1.35;
 }
@@ -1234,7 +1234,7 @@ main {
   content: '·';
   margin: 0 0.5em;
   font-weight: 400;
-  color: var(--buttermilk);
+  color: var(--pastel-blue);
 }
 
 .modal-desc {
@@ -1255,7 +1255,7 @@ main {
 .modal .btn-primary {
   padding: 10px 24px;
   font-size: 0.88rem;
-  background: var(--pastel-blue);
+  background: var(--buttermilk);
   color: var(--old-burgundy);
 }
 
@@ -1446,7 +1446,7 @@ main {
 .footer {
   padding: 24px 0;
   border-top: 1px solid rgba(67, 48, 46, 0.08);
-  background: var(--buttermilk);
+  background: var(--pastel-blue);
 }
 
 .footer-inner {
@@ -1532,7 +1532,7 @@ main {
 }
 
 .checkout-step.is-done .checkout-step-num {
-  background: var(--pastel-blue);
+  background: var(--buttermilk);
   color: var(--old-burgundy);
 }
 
@@ -2018,14 +2018,53 @@ main {
   font-size: 0.92rem;
   font-weight: 600;
   text-decoration: none;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-  margin-bottom: 16px;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.confirmation-ig-btn {
+  background: var(--old-burgundy);
 }
 
 .confirmation-messenger-btn:hover {
   background: #006fd6;
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.confirmation-ig-btn:hover {
+  background: var(--old-burgundy-dark);
+}
+
+.confirmation-message-box {
+  max-width: 360px;
+  margin: 0 auto 20px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.confirmation-message-text {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--old-burgundy);
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.confirmation-copy-btn {
+  width: 100%;
+}
+
+.confirmation-hint {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.confirmation-messenger-btn {
+  margin-bottom: 16px;
 }
 
 /* ── Checkout — Mobile */
@@ -2078,7 +2117,10 @@ main {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 14px;
+    flex-shrink: 0;
+    padding: 14px 16px 12px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
   }
 
   .filters-mobile-title {
@@ -2096,10 +2138,23 @@ main {
     left: 0;
     bottom: 0;
     width: min(300px, 88vw);
-    z-index: 90;
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    max-height: none;
     transform: translateX(-100%);
     transition: transform var(--transition);
     box-shadow: var(--shadow-lg);
+  }
+
+  .filters-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 16px 28px;
   }
 
   .filters.is-open {
@@ -2251,7 +2306,7 @@ main {
 }
 
 .admin-page .btn-primary {
-  background: var(--pastel-blue);
+  background: var(--buttermilk);
   color: var(--old-burgundy);
 }
 
@@ -2311,8 +2366,8 @@ main {
 }
 
 .admin-tab.is-active {
-  background: var(--buttermilk);
-  border-color: var(--buttermilk);
+  background: var(--pastel-blue);
+  border-color: var(--pastel-blue);
   color: var(--old-burgundy);
 }
 
@@ -2423,9 +2478,13 @@ main {
   text-transform: uppercase;
 }
 
-.admin-status.waiting { background: var(--buttermilk); color: var(--old-burgundy); }
-.admin-status.complete { background: var(--pastel-blue); color: var(--old-burgundy); }
+.admin-status.waiting { background: var(--pastel-blue); color: var(--old-burgundy); }
+.admin-status.complete { background: var(--buttermilk); color: var(--old-burgundy); }
 .admin-status.cancelled { background: rgba(67, 48, 46, 0.14); color: var(--old-burgundy); }
+.admin-status.sent { background: var(--buttermilk); color: var(--old-burgundy); }
+.admin-status.pending,
+.admin-status.needs_customer_message { background: var(--pastel-blue); color: var(--old-burgundy); }
+.admin-status.failed { background: rgba(67, 48, 46, 0.14); color: var(--old-burgundy); }
 
 .admin-actions {
   display: flex;

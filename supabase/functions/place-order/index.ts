@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { normalizeInstagram, tryFlushByUsername } from "../_shared/instagram.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,10 +38,20 @@ Deno.serve(async (req) => {
 
     if (error) return json({ error: error.message }, 400);
     const row = Array.isArray(data) ? data[0] : data;
+
+    let instagram = null;
+    if (body.contactMethod === "instagram") {
+      instagram = await tryFlushByUsername(
+        supabase,
+        normalizeInstagram(body.instagram ?? null),
+      );
+    }
+
     return json({
       orderId: row.order_id,
       orderNumber: row.order_number,
       total: row.total,
+      instagram,
     });
   } catch (err) {
     return json({ error: (err as Error).message ?? "Could not place order" }, 400);
