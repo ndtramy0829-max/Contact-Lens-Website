@@ -77,10 +77,12 @@ function renderInventory(products) {
                 <input class="admin-qty" data-available="${p.id}" type="number" min="0" value="${p.available_pairs}">
               </td>
               <td>${p.sold_pairs}</td>
-              <td class="admin-actions">
-                <button class="btn btn-outline" type="button" data-edit-stock="${p.id}">Edit</button>
-                <button class="btn btn-primary" type="button" data-save-stock="${p.id}">Save</button>
-                <button class="btn btn-outline" type="button" data-notify="${p.id}">Notify waitlist</button>
+              <td>
+                <div class="admin-actions">
+                  <button class="btn btn-outline" type="button" data-edit-stock="${p.id}">Edit</button>
+                  <button class="btn btn-primary" type="button" data-save-stock="${p.id}">Save</button>
+                  <button class="btn btn-outline" type="button" data-notify="${p.id}">Notify waitlist</button>
+                </div>
               </td>
             </tr>
           `).join('')}
@@ -124,11 +126,13 @@ function renderOrders(orders) {
               <td>${items}</td>
               <td>${money(o.total)}</td>
               <td><span class="admin-status ${escapeHtml(o.status)}">${escapeHtml(o.status)}</span></td>
-              <td class="admin-actions">
-                ${o.status === 'waiting' ? `
-                  <button class="btn btn-primary" type="button" data-complete="${o.id}">Mark complete</button>
-                  <button class="btn btn-outline" type="button" data-cancel="${o.id}">Cancel</button>
-                ` : ''}
+              <td>
+                <div class="admin-actions">
+                  ${o.status === 'waiting' ? `
+                    <button class="btn btn-primary" type="button" data-complete="${o.id}">Mark complete</button>
+                    <button class="btn btn-outline" type="button" data-cancel="${o.id}">Cancel</button>
+                  ` : ''}
+                </div>
               </td>
             </tr>
           `;
@@ -170,8 +174,10 @@ function renderMessages(messages) {
                 ${m.last_error ? `<br><small>${escapeHtml(m.last_error)}</small>` : ''}
               </td>
               <td>${escapeHtml(new Date(m.created_at).toLocaleString())}</td>
-              <td class="admin-actions">
-                ${canRetry ? `<button class="btn btn-outline" type="button" data-retry-message="${m.id}">Retry</button>` : ''}
+              <td>
+                <div class="admin-actions">
+                  ${canRetry ? `<button class="btn btn-outline" type="button" data-retry-message="${m.id}">Retry</button>` : ''}
+                </div>
               </td>
             </tr>
           `;
