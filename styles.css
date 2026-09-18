@@ -1866,6 +1866,12 @@ main {
   margin-bottom: 14px;
 }
 
+.contact-options #instagramNote {
+  grid-column: 1 / -1;
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+
 .contact-or-separator {
   grid-column: 1 / -1;
   text-align: center;
@@ -1997,13 +2003,30 @@ main {
   line-height: 1.7;
 }
 
+.confirmation-notice {
+  max-width: 420px;
+  margin: 0 auto 22px;
+  padding: 14px 16px;
+  background: rgba(67, 48, 46, 0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 0.92rem;
+  color: var(--old-burgundy);
+  line-height: 1.65;
+  text-align: left;
+}
+
+.confirmation-notice strong {
+  font-weight: 700;
+}
+
 .confirmation-order-num {
   display: inline-block;
   font-family: var(--font-display);
   font-size: 2rem;
   color: var(--ming);
   letter-spacing: 0.06em;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .confirmation-messenger-btn {
@@ -2044,6 +2067,15 @@ main {
   border-radius: var(--radius-lg);
 }
 
+.confirmation-message-label {
+  margin-bottom: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .confirmation-message-text {
   font-family: var(--font-body);
   font-size: 1.05rem;
@@ -2059,12 +2091,17 @@ main {
 
 .confirmation-hint {
   margin-top: 12px;
+  margin-bottom: 20px;
   font-size: 0.85rem;
   color: var(--text-muted);
 }
 
 .confirmation-messenger-btn {
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+}
+
+.confirmation-continue {
+  display: inline-flex;
 }
 
 /* ── Checkout — Mobile */

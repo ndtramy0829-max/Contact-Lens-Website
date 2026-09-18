@@ -120,53 +120,40 @@ function orderConfirmMessage(orderNum) {
 
 function renderConfirmation(contactMethod, orderNum) {
   const confirmText = orderConfirmMessage(orderNum);
-
-  if (contactMethod === 'instagram') {
-    const igUrl = `https://ig.me/m/${IG_SHOP_USERNAME}?ref=ORDER_${orderNum}`;
-    return `
-      <div class="confirmation-heart">♡</div>
-      <h2 class="confirmation-title">Thank you for placing<br>an order with us!</h2>
-      <div class="confirmation-order-num">${orderNum}</div>
-      <p class="confirmation-subtitle">
-        Send this message to <strong>@${IG_SHOP_USERNAME}</strong> from your Instagram account<br>
-        so we can confirm your order.
-      </p>
-      <div class="confirmation-message-box">
-        <p class="confirmation-message-text" id="confirmMessageText">${confirmText}</p>
-        <button type="button" class="btn btn-outline confirmation-copy-btn" id="copyConfirmMessage">
-          Copy message
-        </button>
-      </div>
-      <a href="${igUrl}" target="_blank" rel="noopener" class="confirmation-messenger-btn confirmation-ig-btn">
-        Open Instagram chat
-      </a>
-      <p class="confirmation-hint">Paste the message, then tap Send.</p>
-      <br>
-      <a href="index.html" class="btn btn-outline" style="margin-top:8px;">Continue Shopping</a>
-    `;
-  }
-
-  const messengerUrl = `https://m.me/${FB_PAGE_USERNAME}?ref=ORDER_${orderNum}`;
+  const isInstagram = contactMethod === 'instagram';
+  const channelLabel = isInstagram ? 'Instagram' : 'Facebook Messenger';
+  const channelHandle = isInstagram
+    ? `<strong>@${IG_SHOP_USERNAME}</strong>`
+    : 'our Facebook page';
+  const openUrl = isInstagram
+    ? `https://ig.me/m/${IG_SHOP_USERNAME}?ref=ORDER_${orderNum}`
+    : `https://m.me/${FB_PAGE_USERNAME}?ref=ORDER_${orderNum}`;
+  const openLabel = isInstagram ? 'Open Instagram chat' : 'Open Messenger';
+  const openClass = isInstagram
+    ? 'confirmation-messenger-btn confirmation-ig-btn'
+    : 'confirmation-messenger-btn';
 
   return `
     <div class="confirmation-heart">♡</div>
-    <h2 class="confirmation-title">Thank you for placing<br>an order with us!</h2>
+    <h2 class="confirmation-title">One more step to<br>confirm your order</h2>
     <div class="confirmation-order-num">${orderNum}</div>
-    <p class="confirmation-subtitle">
-      Send this message on Facebook Messenger to confirm your order.
+    <p class="confirmation-notice">
+      Your order is <strong>not officially placed yet</strong>.
+      Please copy and send this message to ${channelHandle} from your ${channelLabel} account
+      so we can proceed with payment and confirm your order.
     </p>
     <div class="confirmation-message-box">
+      <p class="confirmation-message-label">Message to send</p>
       <p class="confirmation-message-text" id="confirmMessageText">${confirmText}</p>
       <button type="button" class="btn btn-outline confirmation-copy-btn" id="copyConfirmMessage">
         Copy message
       </button>
     </div>
-    <a href="${messengerUrl}" target="_blank" rel="noopener" class="confirmation-messenger-btn">
-      Open Messenger
+    <a href="${openUrl}" target="_blank" rel="noopener" class="${openClass}">
+      ${openLabel}
     </a>
-    <p class="confirmation-hint">Paste the message, then tap Send.</p>
-    <br>
-    <a href="index.html" class="btn btn-outline" style="margin-top:8px;">Continue Shopping</a>
+    <p class="confirmation-hint">Paste the message in the chat, then tap Send.</p>
+    <a href="index.html" class="btn btn-outline confirmation-continue">Continue Shopping</a>
   `;
 }
 
@@ -316,7 +303,8 @@ function initCheckoutPage() {
   function refreshContactFields() {
     const contact = currentContact();
     const contactOptions = document.getElementById('contactOptions');
-    document.getElementById('messengerNote').classList.toggle('hidden', contact !== 'messenger');
+    document.getElementById('instagramNote')?.classList.toggle('hidden', contact !== 'instagram');
+    document.getElementById('messengerNote')?.classList.toggle('hidden', contact !== 'messenger');
     contactOptions?.classList.toggle('instagram-selected', contact === 'instagram');
     contactOptions?.classList.toggle('messenger-selected', contact === 'messenger');
   }
