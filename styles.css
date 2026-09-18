@@ -2013,7 +2013,17 @@ main {
   font-size: 0.92rem;
   color: var(--old-burgundy);
   line-height: 1.65;
-  text-align: left;
+  text-align: center;
+}
+
+.confirmation-notice-lead {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: clamp(0.7rem, 3.9vw, 0.95rem);
+  letter-spacing: -0.01em;
 }
 
 .confirmation-notice strong {

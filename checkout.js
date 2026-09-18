@@ -138,7 +138,7 @@ function renderConfirmation(contactMethod, orderNum) {
     <h2 class="confirmation-title">One more step to<br>confirm your order</h2>
     <div class="confirmation-order-num">${orderNum}</div>
     <p class="confirmation-notice">
-      Your order is <strong>not officially placed yet</strong>.
+      <span class="confirmation-notice-lead">Your order is <strong>not officially placed yet</strong>.</span>
       Please copy and send this message to ${channelHandle} from your ${channelLabel} account
       so we can proceed with payment and confirm your order.
     </p>
