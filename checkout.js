@@ -153,7 +153,7 @@ function renderConfirmation(contactMethod, orderNum) {
       ${openLabel}
     </a>
     <p class="confirmation-hint">Paste the message in the chat, then tap Send.</p>
-    <a href="index.html" class="btn btn-outline confirmation-continue">Continue Shopping</a>
+    <a href="shop.html" class="btn btn-outline confirmation-continue">Continue Shopping</a>
   `;
 }
 
